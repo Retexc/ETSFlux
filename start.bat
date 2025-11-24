@@ -1,6 +1,6 @@
 @echo off
 echo ================================
-echo Bdeb-Go
+echo ETS Flux
 echo ================================
 echo.
 echo Starting application...

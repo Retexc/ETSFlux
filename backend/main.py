@@ -1,36 +1,24 @@
 # app.py
-import os, sys, time, json, logging, subprocess, threading, re, requests
-from datetime import datetime
+import os, sys, logging
 from flask_cors import CORS
-from flask import Flask, render_template, request, jsonify, redirect
+from flask import Flask, jsonify
 
-try:
-    from supabase import create_client
-    SUPABASE_AVAILABLE = True
-except ImportError:
-    SUPABASE_AVAILABLE = False
-    print("⚠️  Supabase module not installed")
 # ────── PACKAGE IMPORTS ───────────────────────────────────────
-from .config            import WEATHER_API_KEY, BUS_ROUTES
+from .config            import BUS_ROUTES
 from .utils             import is_service_unavailable
 
 from .loaders.stm       import (
     fetch_stm_alerts,
-    fetch_stm_general_alerts,
-    fetch_stm_route_specific_alerts, 
-    fetch_all_stm_alerts,  
     fetch_stm_realtime_data,
     fetch_stm_positions_dict,
-    load_stm_gtfs_trips,
-    load_stm_stop_times,
-    load_stm_routes,
     process_stm_trip_updates,
-    stm_map_occupancy_status,
-    debug_print_stm_occupancy_status,
-    validate_trip,
 )
 
 from .alerts import process_stm_alerts
+
+# New Imports
+from .loaders.gtfs_loader import download_gtfs_data, load_gtfs_data
+from .managers.weather_manager import get_weather
 
 # ────────────────────────────────────────────────────────────────
 
@@ -38,12 +26,6 @@ print("__name__:", __name__)
 print("__package__:", __package__)
 print("sys.path:", sys.path)
 
-_weather_cache = {
-    "ts":   0,     # last fetch timestamp
-    "data": None,  # cached weather dict
-}
-
-CACHE_TTL = 5 * 60  # seconds (5 minutes)
 logger = logging.getLogger('BdeB-GTFS')
 app = Flask(__name__)
 CORS(app)
@@ -54,116 +36,10 @@ STM_DIR = os.path.join(GTFS_BASE, "stm")
 os.makedirs(STM_DIR, exist_ok=True)
 
 # ─── Download GTFS files from Supabase on startup (production only) ────────
-if os.environ.get('ENVIRONMENT') != 'development':
-    SUPABASE_URL = os.getenv("SUPABASE_URL")
-    SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-    
-    if SUPABASE_URL and SUPABASE_KEY:
-        try:
-            print("📥 Downloading GTFS files from Supabase...")
-            
-            supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-            
-            # List files in the stm folder
-            result = supabase.storage.from_("gtfs-files").list("stm")
-            print(f"   DEBUG: Supabase list result: {result}")
-            print(f"   DEBUG: Result type: {type(result)}")
-            print(f"   DEBUG: Result length: {len(result) if result else 0}")
-            if result:
-                files_to_download = ["routes.txt", "trips.txt", "stop_times.txt"]
-                
-                for filename in files_to_download:
-                    # Find the most recent version of this file
-                    matching_files = [f for f in result if f["name"].endswith(filename)]
-                    
-                    if matching_files:
-                        # Sort by created_at to get most recent
-                        matching_files.sort(key=lambda x: x["created_at"], reverse=True)
-                        latest_file = matching_files[0]
-                        
-                        # Download the file
-                        file_path_in_bucket = f"stm/{latest_file['name']}"
-                        local_file_path = os.path.join(STM_DIR, filename)
-                        
-                        print(f"   Downloading {filename}...")
-                        data = supabase.storage.from_("gtfs-files").download(file_path_in_bucket)
-                        
-                        with open(local_file_path, "wb") as f:
-                            f.write(data)
-                        
-                        file_size = len(data) / 1024
-                        print(f"   ✅ {filename} downloaded ({file_size:.1f} KB)")
-                
-                print("✅ GTFS files downloaded from Supabase!")
-            else:
-                print("⚠️  No GTFS files found in Supabase")
-                
-        except Exception as e:
-            print(f"⚠️  Error downloading GTFS from Supabase: {e}")
-            print("   Continuing with local files if available...")
-    else:
-        print("⚠️  Supabase credentials not set, skipping cloud download")
+download_gtfs_data(STM_DIR)
 
 # ─── check for required GTFS files ────────────────────────────
-required_stm = ["routes.txt", "trips.txt", "stop_times.txt"]
-
-missing = []
-for fname in required_stm:
-    fpath = os.path.join(STM_DIR, fname)
-    if not os.path.isfile(fpath):
-        missing.append(f"stm/{fname}")
-    else:
-        # Print file size to confirm it exists
-        fsize = os.path.getsize(fpath) / 1024
-        print(f"✓ Found {fname} ({fsize:.1f} KB)")
-
-if missing:
-    print("⚠️  Fichiers GTFS manquants:")
-    for m in missing:
-        print(f"   • {m}")
-    print("\nL'application démarre quand même. Téléchargez les fichiers GTFS via l'interface admin.")
-    routes_map = {}
-    stm_trips = {}  # ← FIX: Changed from [] to {}
-    stm_stop_times = {}
-else:
-    # Charger les fichiers 
-    print("📂 Loading GTFS files...")
-    stm_routes_fp = os.path.join(STM_DIR, "routes.txt")
-    stm_trips_fp = os.path.join(STM_DIR, "trips.txt")
-    stm_stop_times_fp = os.path.join(STM_DIR, "stop_times.txt")
-    
-    routes_map = load_stm_routes(stm_routes_fp)
-    stm_trips = load_stm_gtfs_trips(stm_trips_fp, routes_map)
-    stm_stop_times = load_stm_stop_times(stm_stop_times_fp)
-    
-    print(f"✅ Loaded {len(stm_trips)} trips")
-    print(f"✅ Loaded {len(routes_map)} routes")
-
-def get_weather():
-    """Fetch weather from WeatherAPI at most once per CACHE_TTL."""
-    now = time.time()
-    # if cache is stale, refresh it
-    if now - _weather_cache["ts"] > CACHE_TTL:
-        try:
-            resp = requests.get(
-                f"http://api.weatherapi.com/v1/current.json"
-                f"?key={WEATHER_API_KEY}"
-                "&q=Montreal,QC"
-                "&aqi=no"
-                "&lang=fr",
-                timeout=5
-            ).json()
-            _weather_cache["data"] = {
-                "icon": "https:" + resp["current"]["condition"]["icon"],
-                "text":  resp["current"]["condition"]["text"],
-                "temp":  int(round(resp["current"]["temp_c"])),
-            }
-        except Exception:
-            # leave last good data or None
-            pass
-        _weather_cache["ts"] = now
-
-    return _weather_cache["data"] or {"icon":"", "text":"", "temp":""}
+routes_map, stm_trips, stm_stop_times = load_gtfs_data(STM_DIR)
 
 # ====================================================================
 # Metro Alerts Processing Functions
@@ -215,6 +91,7 @@ def process_metro_alerts():
         
         # Process alerts to check for metro disruptions
         if alerts_data:
+            import re
             for alert in alerts_data:
                 try:
                     informed_entities = alert.get("informed_entities", [])
@@ -389,7 +266,7 @@ def merge_alerts_into_buses(buses, processed_alerts):
 def index():
     return jsonify({
         "status": "ok",
-        "message": "ETSignage API is running",
+        "message": "ETS Flux API is running",
         "endpoints": {
             "data": "/api/data"
         }
@@ -533,5 +410,5 @@ def get_data():
 if __name__ == '__main__':
     from waitress import serve
     port = int(os.environ.get('PORT', 5000))
-    print(f"Starting ETSignage (Flux) on http://0.0.0.0:{port}")
+    print(f"Starting ETS Flux on http://0.0.0.0:{port}")
     serve(app, host='0.0.0.0', port=port)
