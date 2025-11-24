@@ -97,10 +97,9 @@ def serviceRunsToday(service_id):
     return run_today
 
 def fetch_stm_realtime_data():
-
-    if IS_DEV_MODE:
-        from backend.mock_stm_data import get_mock_trip_entities
-        return get_mock_trip_entities()
+    # if IS_DEV_MODE:
+    #     from backend.mock_stm_data import get_mock_trip_entities
+    #     return get_mock_trip_entities()
     headers = {
         "accept": "application/x-protobuf",
         "apiKey": STM_API_KEY,
@@ -116,9 +115,9 @@ def fetch_stm_realtime_data():
         return []
     
 def fetch_stm_vehicle_positions():
-    if IS_DEV_MODE:
-        from backend.mock_stm_data import get_mock_vehicle_positions
-        return get_mock_vehicle_positions()
+    # if IS_DEV_MODE:
+    #     from backend.mock_stm_data import get_mock_vehicle_positions
+    #     return get_mock_vehicle_positions()
     headers = {
         "accept": "application/x-protobuf",
         "apiKey": STM_API_KEY,
@@ -142,9 +141,9 @@ _stm_alerts_cache = {
 STM_ALERTS_CACHE_TTL = 30  # Cache alerts for 30 seconds
 
 def fetch_stm_alerts():
-    if IS_DEV_MODE:
-        from backend.mock_stm_data import get_mock_alerts
-        return get_mock_alerts()
+    # if IS_DEV_MODE:
+    #     from backend.mock_stm_data import get_mock_alerts
+    #     return get_mock_alerts()
     
     global _stm_alerts_cache
 
@@ -814,3 +813,15 @@ def display_current_alerts():
             print("-" * 50)
     else:
         print("Aucune alerte générale active.")
+        
+    print("\n=== ALERTES SPÉCIFIQUES AUX ROUTES ===")
+    route_alerts = all_alerts["route_alerts"]
+    if route_alerts:
+        for route_id, alerts in route_alerts.items():
+            if alerts:
+                print(f"\n🚌 Route {route_id}:")
+                for alert in alerts:
+                    print(f"  - {alert['header']}")
+                    print(f"    {alert['description']}")
+    else:
+        print("Aucune alerte spécifique aux routes surveillées.")

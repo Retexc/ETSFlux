@@ -11,7 +11,7 @@ except ImportError:
     SUPABASE_AVAILABLE = False
     print("⚠️  Supabase module not installed")
 # ────── PACKAGE IMPORTS ───────────────────────────────────────
-from .config            import WEATHER_API_KEY
+from .config            import WEATHER_API_KEY, BUS_ROUTES
 from .utils             import is_service_unavailable
 
 from .loaders.stm       import (
@@ -169,9 +169,6 @@ def get_weather():
 # Metro Alerts Processing Functions
 # ====================================================================
 def process_metro_alerts():
-    if os.environ.get('ENVIRONMENT') == 'development':
-        from backend.mock_stm_data import get_mock_metro_lines
-        return get_mock_metro_lines()
     try:
         # Fetch all STM alerts
         alerts_data = fetch_stm_alerts()
@@ -459,11 +456,7 @@ def get_data():
         # ========== STM BUSES WITH OCCUPANCY ==========
         buses = []
         try:
-            if os.environ.get('ENVIRONMENT') == 'development':
-                from backend.mock_stm_data import get_mock_processed_buses
-                buses = get_mock_processed_buses()
-            else:
-                from .config import BUS_ROUTES
+
             
             stm_trip_entities = fetch_stm_realtime_data()
             # FIX: Pass routes_map so vehicle positions can convert GTFS IDs to short names
