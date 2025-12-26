@@ -20,12 +20,10 @@ const shouldShowContent = computed(() => {
   return isAppReady.value && isRouteReady.value;
 });
 
-// 🎯 Liste des routes publiques (qui ne nécessitent PAS de connexion)
+// Liste des routes publiques (nécessitent pas de connexion)
 const publicRoutes = ['/login', '/password', '/forgot-password', '/reset-password', '/display', '/stm'];
 
-// ⏰ Fonction qui détecte l'activité de l'utilisateur
-// À chaque fois que l'utilisateur bouge la souris, clique, tape, ou fait défiler,
-// on réinitialise le timer d'inactivité
+//  Fonction qui détecte l'activité de l'utilisateur
 function handleUserActivity() {
   // On réinitialise le timer seulement si l'utilisateur est connecté
   // et qu'on n'est pas sur une page publique
@@ -54,7 +52,7 @@ onMounted(async () => {
   
   isAppReady.value = true;
 
-  // ⏰ Ajouter les écouteurs d'événements pour détecter l'activité
+  //  Ajouter les écouteurs d'événements pour détecter l'activité
   // Ces événements vont réinitialiser le timer à chaque fois que l'utilisateur fait quelque chose
   window.addEventListener('mousemove', handleUserActivity);
   window.addEventListener('mousedown', handleUserActivity);
@@ -63,7 +61,7 @@ onMounted(async () => {
   window.addEventListener('touchstart', handleUserActivity);
 });
 
-// ⏰ Nettoyer les écouteurs quand l'app se ferme
+//  Nettoyer les écouteurs quand l'app se ferme
 onUnmounted(() => {
   window.removeEventListener('mousemove', handleUserActivity);
   window.removeEventListener('mousedown', handleUserActivity);
@@ -81,7 +79,7 @@ watch(() => route.path, (newPath) => {
     isRouteReady.value = true;
   }, 50);
 
-  // ⏰ Gestion du timer selon la route
+  // Gestion du timer selon la route
   // Si on va sur une route publique, on arrête le timer
   if (publicRoutes.includes(newPath)) {
     authStore.clearInactivityTimer();
@@ -116,7 +114,7 @@ watch(() => authStore.user, (newUser) => {
       </router-view>
     </div>
 
-    <div v-else-if="shouldShowContent" id="app" class="flex min-h-screen bg-[#F0F0F0]">
+    <div v-else-if="shouldShowContent" id="app" class="flex flex-col md:flex-row min-h-screen bg-[#F0F0F0] overflow-hidden">
       <Sidebar 
         v-if="$route.path !== '/Editor' && 
               $route.path !== '/login' && 
