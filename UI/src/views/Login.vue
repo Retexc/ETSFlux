@@ -65,9 +65,16 @@ async function onSubmit() {
     class="min-h-screen bg-center bg-cover bg-no-repeat"
     :style="{ backgroundImage: `url(${bgImg})` }"
   >
-    <div class="flex items-center justify-start h-screen">
+    <div class="flex flex-col justify-center items-center md:flex-row md:justify-start h-screen w-full">
       <!-- WHITE CARD -->
-      <div class="bg-[#ffffff] w-2/5 h-full p-8 px-18 overflow-hidden flex flex-col">
+      <div class="
+      bg-white
+      w-[90%] md:w-1/2 lg:w-2/5
+      h-auto md:h-full
+      p-8 px-6 md:px-18
+      rounded-2xl md:rounded-none
+      shadow-2xl md:shadow-none      
+      overflow-hidden flex flex-col justify-center relative">
         <motion.div
           :initial="{ opacity: 0, y: 20, filter: 'blur(10px)' }"
           :animate="{
@@ -87,13 +94,18 @@ async function onSubmit() {
             filter: 'blur(0px)',
             transition: { delay: 0.5, duration: 1 },
           }"
-          class="flex flex-col items-center justify-center space-y-6 w-full text-left mt-50"
+          class="flex flex-col items-center justify-center space-y-6 w-full text-left"
         >
           <img
-            :src=logo
+            :src="logo"
             alt="ETS Logo"
-            class=" w-54 self-start mt-2 mb-8 drop-shadow-2xl -ml-2"
+            class="w-40 md:w-54 self-center md:self-start mt-2 mb-2 drop-shadow-2xl"
           />
+
+          <div class="flex flex-col items-center md:items-start justify-center w-full mb-6">
+            <h1 class="text-2xl font-bold text-center md:text-left">Heureux de vous revoir !</h1>
+            <p class="text-center text-gray-700 md:text-left">Entrez vos identifiants pour vous connecter.</p>
+          </div>
 
 
           <!-- 🚨 MESSAGE D'ERREUR -->
@@ -107,32 +119,37 @@ async function onSubmit() {
           <!-- Form -->
           <form
             @submit.prevent="onSubmit"
-            class="w-full flex flex-col items-left space-y-6 font-bold text-xl"
+            class="w-full flex flex-col space-y-6"
           >
-            <span>Email</span>
+            <div class="flex flex-col gap-1">
+            <label class="font-semibold text-base ml-1">Adresse courriel</label>
             <input
               v-model="email"
               type="email"
               placeholder="votre.email@etsmtl.ca"
               required
               :disabled="loading"
-              class="w-full p-3 bg-transparent border-2 border-[#535353] text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#E4022C] text-sm disabled:opacity-50"
+              class="w-full p-3 bg-transparent border-2 border-[#535353] text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#E4022C] text-sm disabled:opacity-50 rounded-xl"
             />
-            
-            <span>Mot de passe</span>
+            </div>
+
+            <div class="flex flex-col gap-1">
+            <label class="font-semibold text-base ml-1">Mot de passe</label>
             <input
               v-model="password"
               type="password"
               placeholder="Mot de passe"
               required
               :disabled="loading"
-              class="w-full p-3 bg-transparent border-2 border-[#535353] text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#E4022C] text-sm disabled:opacity-50"
-            />
+              class="w-full p-3 bg-transparent border-2 border-[#535353] text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#E4022C] text-sm disabled:opacity-50 rounded-xl"
+            />              
+            </div>
+
 
             <button
               type="submit"
               :disabled="loading"
-              class="w-full py-3 bg-[#E4022C] hover:bg-[#D5052C] text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              class="w-full py-3 bg-[#E4022C] hover:bg-[#D5052C] text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all rounded-xl"
             >
               {{ loading ? "Connexion en cours..." : "Connexion" }}
             </button>

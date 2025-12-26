@@ -1,5 +1,5 @@
 <template>
-  <div class="relative w-full h-screen overflow-hidden bg-gray-100 p-8">
+  <div class="relative w-full h-full overflow-hidden bg-gray-100 p-8">
     <div class="announcement-preview bg-white rounded-lg shadow-lg overflow-hidden h-full relative">
       
       <!-- Conteneur d'affichage -->
