@@ -400,7 +400,7 @@ function getCurrentUpdateState() {
 
 <template>
   <motion.div
-    class="flex max-h-screen bg-[#f0f0f0]"
+    class="min-h-screen bg-[#f0f0f0] overflow-y-auto"
     :initial="{ opacity: 0, y: 20, filter: 'blur(10px)' }"
     :animate="{
       opacity: 1,
@@ -409,26 +409,24 @@ function getCurrentUpdateState() {
       transition: { duration: 0.5 },
     }"
   >
-    <div class="flex-1 flex flex-col p-6 space-y-6 mt-18 ml-5 mr-5">
-      <div class="space-y-1 w-full">
-        <h2 class="text-4xl font-bold text-black">Paramètres</h2>
-        <p class="text-xl text-black">
+    <div class="flex-1 flex flex-col p-4 md:p-6 space-y-6 mt-16 md:mt-18 max-w-5xl mx-auto w-full">
+      
+      <div class="space-y-1 w-full text-center md:text-left">
+        <h2 class="text-3xl md:text-4xl font-bold text-black">Paramètres</h2>
+        <p class="text-lg md:text-xl text-black">
           Modifier les paramètres de l'application
         </p>
 
-        <!-- ──────── Tabs ──────── -->
-        <div
-          class="mt-2 text-sm font-medium text-center text-gray-500 border-b border-gray-200"
-        >
-          <ul class="flex flex-wrap -mb-px">
+        <div class="mt-4 text-sm font-medium text-center text-gray-500 border-b border-gray-200">
+          <ul class="flex flex-wrap -mb-px justify-center md:justify-start">
             <li v-for="tab in tabs" :key="tab.id" class="mr-2">
               <a
                 href="#"
                 @click.prevent="active = tab.id"
                 :class="[
-                  'inline-block p-4 border-b-2 rounded-t-lg',
+                  'inline-block p-4 border-b-2 rounded-t-lg transition-colors',
                   active === tab.id
-                    ? 'text-black font-bold border-red-500'
+                    ? 'text-black font-bold border-[#E4022C]'
                     : 'border-transparent hover:text-gray-600 hover:border-gray-300',
                 ]"
               >
@@ -439,80 +437,75 @@ function getCurrentUpdateState() {
         </div>
       </div>
 
-      <!-- ──────── Tab Panels ──────── -->
-        <motion.div
-          class="mt-4"
-          :key="'tab_panel'"
-          :initial="{ opacity: 0, y: 20, filter: 'blur(10px)' }"
-          :animate="{
-            opacity: 1,
-            y: 0,
-            filter: 'blur(0px)',
-            transition: { duration: 0.5 },
-          }"
-        >
+      <motion.div
+        class="mt-4 pb-20"
+        :key="'tab_panel'"
+        :initial="{ opacity: 0, y: 20, filter: 'blur(10px)' }"
+        :animate="{
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          transition: { duration: 0.5 },
+        }"
+      >
         <motion.div 
-        v-if="active === 'gtfs'"
-        :key="'gtfs_tab'"
-        :initial="{ opacity: 0, y: 20 }"
-        :animate="{ opacity: 1, y: 0, transition: { duration: 0.3 } }"        
+          v-if="active === 'gtfs'"
+          :key="'gtfs_tab'"
+          :initial="{ opacity: 0, y: 20 }"
+          :animate="{ opacity: 1, y: 0, transition: { duration: 0.3 } }"        
         >
-          <div class="bg-gray-300 rounded-lg p-6 mb-6 text-black space-y-4">
-            <h3 class="text-xl font-semibold">
-              Les fichiers GTFS contiennent les horaires et les informations des
-              autobus de la STM. Il est nécessaire de les mettre à jour
-              régulièrement.
+          <div class="bg-white md:bg-gray-300 rounded-lg p-4 md:p-6 mb-6 text-black space-y-4 shadow-sm md:shadow-none">
+            <h3 class="text-lg md:text-xl font-semibold">
+              Mise à jour des fichiers GTFS
             </h3>
-            <p>
-              Vous pouvez utiliser les dates disponibles sur le site de la STM
-              comme référence pour mettre à jour les fichiers.
+            <p class="text-sm md:text-base">
+              Les fichiers GTFS contiennent les horaires et les informations des autobus de la STM. 
+              Utilisez les données du site officiel pour la mise à jour.
             </p>
-            <p>
-              Pour télécharger les dernières versions des données GTFS,
-              consultez :
-            </p>
-            <ul class="list-disc list-inside space-y-1">
+            
+            <ul class="list-disc list-inside space-y-1 text-sm md:text-base">
               <li>
                 <a
                   href="https://www.stm.info/fr/a-propos/developpeurs"
                   target="_blank"
-                  class="text-black underline hover:text-blue-400"
+                  class="text-[#E4022C] font-bold hover:underline"
                 >
-                  STM : Développeurs | Société de transport de Montréal
+                  STM : Espace Développeurs
                 </a>
               </li>
             </ul>
-            <div class="bg-blue-100 border-l-4 border-blue-500 p-4 mt-4">
-              <p class="text-sm text-blue-700">
-                ℹ️ <strong>Note:</strong> Seuls les fichiers <code class="bg-blue-200 px-1 rounded">routes.txt</code>, 
-                <code class="bg-blue-200 px-1 rounded">trips.txt</code> et 
-                <code class="bg-blue-200 px-1 rounded">stop_times.txt</code> sont extraits du ZIP et uploadés.
+
+            <div class="bg-blue-100 border-l-4 border-blue-500 p-4 mt-4 rounded-r">
+              <p class="text-xs md:text-sm text-blue-800">
+                ℹ️ <strong>Note:</strong> Seuls les fichiers <code class="bg-blue-200 px-1 rounded font-mono">routes.txt</code>, 
+                <code class="bg-blue-200 px-1 rounded font-mono">trips.txt</code> et 
+                <code class="bg-blue-200 px-1 rounded font-mono">stop_times.txt</code> seront extraits.
               </p>
             </div>
           </div>
           
-          <!-- Section STM -->
           <div class="flex flex-col space-y-6">
             <img
               src="../assets/images/stm_logo.svg"
               alt="STM logo"
-              class="gtfs-logo mb-3 h-10 self-start"
+              class="gtfs-logo mb-1 h-8 md:h-10 self-start"
             />
-            <hr class="border-t border-[#404040] mt-3" />
+            <hr class="border-t border-gray-300" />
             
             <div class="flex flex-col space-y-4">
-              <!-- Bouton d'import STM -->
-              <div class="flex items-center justify-between bg-white rounded-lg p-4 shadow">
-                <div class="flex-1">
+              <div class="flex flex-col md:flex-row items-start md:items-center justify-between bg-white rounded-lg p-4 md:p-6 shadow-md gap-4">
+                
+                <div class="flex-1 w-full">
                   <h4 class="font-semibold text-lg">Fichier GTFS (ZIP)</h4>
-                  <p class="text-sm text-gray-600">
-                    Dernière mise à jour : {{ stmLastUpdate }}
+                  <p class="text-sm text-gray-500 mt-1">
+                    Dernière mise à jour : <span class="font-medium text-black">{{ stmLastUpdate }}</span>
                   </p>
                 </div>
+
                 <button
                   @click="openSTMFileSelector"
                   :disabled="isUploadingSTM"
-                  class="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="w-full md:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   <svg v-if="!isUploadingSTM" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
@@ -521,11 +514,10 @@ function getCurrentUpdateState() {
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  {{ isUploadingSTM ? 'Extraction & Upload...' : 'Importer' }}
+                  {{ isUploadingSTM ? 'Chargement...' : 'Importer' }}
                 </button>
               </div>
               
-              <!-- Input file caché pour STM -->
               <input
                 ref="stmFileInputRef"
                 type="file"
@@ -537,69 +529,67 @@ function getCurrentUpdateState() {
           </div>
         </motion.div>
         
-        
         <motion.div
-        v-else-if="active === 'about'"
-        :key="'about_tab'"
-        :initial="{ opacity: 0, y: 20 }"
-        :animate="{ opacity: 1, y: 0, transition: { duration: 0.3 } }"          
+          v-else-if="active === 'about'"
+          :key="'about_tab'"
+          :initial="{ opacity: 0, y: 20 }"
+          :animate="{ opacity: 1, y: 0, transition: { duration: 0.3 } }"          
         >
           <div
-            class="bg-gray-300 rounded-2xl p-10 flex flex-row items-center justify-between space-x-8"
+            class="bg-white md:bg-gray-300 rounded-2xl p-6 md:p-10 flex flex-col md:flex-row items-center md:justify-between gap-8 shadow-lg md:shadow-none"
           >
-            <!-- left column: text info -->
-            <div class="space-y-2">
-              <h2 class="text-2xl font-bold text-black">Higher Pierre</h2>
-              <p class="text-xl text-black">Designer UX/UI</p>
-              <p class="text-xl text-black">Créateur de contenu multimédia</p>
-              <p class="text-xl text-black flex items-center">
+            <div class=" text-center md:text-left order-2 md:order-1">
+              <div>
+                <h2 class="text-3xl font-bold text-black">Higher Pierre</h2>
+                <p class="text-lg text-gray-600 font-medium">Designer UX/UI</p>
+              </div>
+
+              
+              <p class="text-base text-gray-500 flex items-center justify-center md:justify-start pt-2">
                 Fait avec
-                <span class="ml-2 text-red-500">❤️</span>
+                <span class="mx-2 text-red-500 animate-pulse text-xl">❤️</span>
               </p>
             </div>
 
-            <!-- right column: avatar + buttons -->
-            <div class="flex flex-col items-center space-y-4">
-              <!-- circular profile picture -->
-              <img
-                src="../assets/images/hp.jpg"
-                alt="Mon profil"
-                class="w-32 h-32 rounded-full object-cover shadow-lg"
-              />
+            <div class="flex flex-col items-center space-y-6 order-1 md:order-2">
+              <div class="relative group">
+                 <div class="absolute -inset-1 bg-gradient-to-r from-red-600 to-blue-600 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+                 <img
+                  src="../assets/images/hp.jpg"
+                  alt="Mon profil"
+                  class="relative w-32 h-32 md:w-40 md:h-40 rounded-full object-cover shadow-xl border-4 border-white"
+                />
+              </div>
 
-              <!-- social buttons -->
-              <div class="flex space-x-2">
+              <div class="flex flex-wrap justify-center gap-3">
                 <a
                   href="https://www.linkedin.com/in/higherpierre/"
                   target="_blank"
                   rel="noopener"
-                  class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
+                  class="flex items-center px-4 py-2 bg-[#0077b5] hover:bg-[#006396] text-white rounded-full transition shadow-md hover:shadow-lg transform hover:-translate-y-1"
                 >
-                  <Linkedin class="w-5 h-5" />
-                  <span class="ml-2 font-medium">LinkedIn</span>
+                  <Linkedin class="w-4 h-4" />
+                  <span class="ml-2 font-medium text-sm">LinkedIn</span>
                 </a>
 
                 <a
                   href="https://github.com/Retexc"
                   target="_blank"
                   rel="noopener"
-                  class="flex items-center px-4 py-2 bg-white hover:bg-gray-400 text-black rounded-lg transition"
+                  class="flex items-center px-4 py-2 bg-[#24292e] hover:bg-[#1a1e22] text-white rounded-full transition shadow-md hover:shadow-lg transform hover:-translate-y-1"
                 >
-                  <Github class="w-5 h-5" />
-                  <span class="ml-2 font-medium">GitHub</span>
+                  <Github class="w-4 h-4" />
+                  <span class="ml-2 font-medium text-sm">GitHub</span>
                 </a>
               </div>
             </div>
           </div>
         </motion.div>
-        </motion.div>
+      </motion.div>
     </div>
-</motion.div>
+  </motion.div>
 </template>
 
 <style scoped>
-.home-page {
-  padding: 2rem;
-  text-align: center;
-}
+/* Scoped styles if needed */
 </style>
