@@ -22,11 +22,11 @@ if %SILENT_MODE%==0 (
 
 if %SILENT_MODE%==0 (
     echo ================================
-    echo BdeB-Go Setup
+    echo ETS Flux Setup
     echo ================================
     echo.
 ) else (
-    echo [AUTO-UPDATE] BdeB-Go automated update started...
+    echo [AUTO-UPDATE] ETS Flux automated update started...
 )
 
 REM Track overall success but continue execution
@@ -267,7 +267,7 @@ if %SILENT_MODE%==0 (
         (
         echo @echo off
         echo echo ================================
-        echo echo Bdeb-Go
+        echo echo ETS Flux
         echo echo ================================
         echo echo.
         echo echo Starting application...

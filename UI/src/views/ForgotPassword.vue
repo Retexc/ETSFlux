@@ -88,7 +88,7 @@ function goBack() {
           class="flex py-24 px-12 flex-col items-center justify-center space-y-6 w-full text-left"
         >
           <img
-            src="../assets/icons/etsignage.svg"
+            src="../assets/icons/etsflux.svg"
             alt="ETS Signage Logo"
             class="w-56 self-start mt-2 mb-8 -ml-2 drop-shadow-2xl"
           />

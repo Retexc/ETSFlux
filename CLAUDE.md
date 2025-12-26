@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-BdeB-Go (ETSignage) is a real-time public transit display system designed for Collège de Bois-de-Boulogne. It displays bus/train schedules, service alerts, and crowding levels using GTFS and GTFS-RT data from STM (Montreal metro/bus) and Exo (commuter trains).
+ETS Flux is a real-time public transit display system designed for Collège de Bois-de-Boulogne. It displays bus/train schedules, service alerts, and crowding levels using GTFS and GTFS-RT data from STM (Montreal metro/bus) and Exo (commuter trains).
 
 **Architecture**: Python Flask backend + Vue 3 frontend (admin console + display interface)
 
