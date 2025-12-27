@@ -21,10 +21,10 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     // Est-ce que quelqu'un est connecté ?
     isAuthenticated: (state) => state.user !== null,
-    
+
     // Récupérer l'email de l'utilisateur connecté
     userEmail: (state) => state.user?.email || '',
-    
+
     // Récupérer l'ID de l'utilisateur connecté
     userId: (state) => state.user?.id || null
   },
@@ -35,9 +35,9 @@ export const useAuthStore = defineStore('auth', {
     startInactivityTimer() {
       // D'abord, on efface le timer existant (si il y en a un)
       this.clearInactivityTimer()
-      
+
       console.log('⏰ Timer d\'inactivité démarré (15 minutes)')
-      
+
       // On créé un nouveau timer qui va déconnecter après 15 minutes
       this.inactivityTimer = setTimeout(() => {
         console.log('⏰ 15 minutes d\'inactivité détectées - Déconnexion automatique')
@@ -73,30 +73,30 @@ export const useAuthStore = defineStore('auth', {
     async signIn(email, password) {
       this.loading = true
       this.error = null
-      
+
       try {
         // Appel à Supabase pour se connecter
         const { data, error } = await supabase.auth.signInWithPassword({
           email: email,
           password: password
         })
-        
+
         if (error) {
           // Si erreur, on la stocke pour l'afficher
           this.error = error.message
           console.error('Erreur de connexion:', error)
           return { success: false, error: error.message }
         }
-        
+
         // ✅ Connexion réussie !
         this.user = data.user
         console.log('✅ Connexion réussie:', this.user.email)
-        
+
         // ⏰ Démarrer le timer d'inactivité après la connexion
-        this.startInactivityTimer()
-        
+        // this.startInactivityTimer()
+
         return { success: true }
-        
+
       } catch (err) {
         this.error = err.message
         console.error('Erreur inattendue:', err)
@@ -110,24 +110,24 @@ export const useAuthStore = defineStore('auth', {
     async signOut() {
       this.loading = true
       this.error = null
-      
+
       // ⏰ Arrêter le timer d'inactivité
       this.clearInactivityTimer()
-      
+
       try {
         const { error } = await supabase.auth.signOut()
-        
+
         if (error) {
           this.error = error.message
           console.error('Erreur de déconnexion:', error)
           return { success: false }
         }
-        
+
         // ✅ Déconnexion réussie
         this.user = null
         console.log('👋 Déconnexion réussie')
         return { success: true }
-        
+
       } catch (err) {
         this.error = err.message
         console.error('Erreur inattendue:', err)
@@ -141,22 +141,22 @@ export const useAuthStore = defineStore('auth', {
     async changePassword(newPassword) {
       this.loading = true
       this.error = null
-      
+
       try {
         const { data, error } = await supabase.auth.updateUser({
           password: newPassword
         })
-        
+
         if (error) {
           this.error = error.message
           console.error('Erreur changement mot de passe:', error)
           return { success: false, error: error.message }
         }
-        
+
         // ✅ Mot de passe changé
         console.log('✅ Mot de passe changé avec succès')
         return { success: true }
-        
+
       } catch (err) {
         this.error = err.message
         console.error('Erreur inattendue:', err)
@@ -169,24 +169,24 @@ export const useAuthStore = defineStore('auth', {
     // 🔍 VÉRIFIER si un utilisateur est déjà connecté (au chargement de l'app)
     async checkUser() {
       this.loading = true
-      
+
       try {
         // Demande à Supabase : "Y a-t-il quelqu'un de connecté ?"
         const { data: { user } } = await supabase.auth.getUser()
-        
+
         if (user) {
           this.user = user
           console.log('👤 Utilisateur trouvé:', user.email)
-          
+
           // ⏰ Démarrer le timer d'inactivité si l'utilisateur est connecté
-          this.startInactivityTimer()
+          // this.startInactivityTimer()
         } else {
           this.user = null
           console.log('❌ Aucun utilisateur connecté')
         }
-        
+
         return user
-        
+
       } catch (err) {
         console.error('Erreur vérification utilisateur:', err)
         this.user = null
@@ -201,11 +201,11 @@ export const useAuthStore = defineStore('auth', {
     initAuthListener() {
       supabase.auth.onAuthStateChange((event, session) => {
         console.log('🔔 Changement d\'auth:', event)
-        
+
         if (session?.user) {
           this.user = session.user
           // ⏰ Redémarrer le timer si l'utilisateur se connecte
-          this.startInactivityTimer()
+          // this.startInactivityTimer()
         } else {
           this.user = null
           // ⏰ Arrêter le timer si l'utilisateur se déconnecte

@@ -42,7 +42,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="flex flex-col h-[100dvh] w-full overflow-hidden relative bg-[#F0F0F0]">
+  <div class="flex flex-col h-[100svh] w-full overflow-hidden relative bg-[#F0F0F0]">
     
     <motion.div
       :initial="{ opacity: 0, y: 20, filter: 'blur(10px)' }"
@@ -57,7 +57,7 @@ onBeforeUnmount(() => {
       <Preview />
     </motion.div>
 
-    <div class="md:hidden w-full p-4 pb-6 bg-white border-t border-gray-200 shrink-0 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+    <div class="md:hidden w-full p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-white border-t border-gray-200 shrink-0 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
       <button
         @click="handleAccessClick"
         class="w-full py-4 bg-[#3B82F6] hover:bg-[#2563EB] text-white font-bold rounded-lg text-lg shadow-lg flex items-center justify-center gap-2"
