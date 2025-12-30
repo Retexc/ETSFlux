@@ -6,6 +6,7 @@ console.log("[DEBUG] Using Vite config from", __dirname);
 export default defineConfig({
   plugins: [vue(), tailwindcss()],
   server: {
+    host: true,
     proxy: {
       "/admin": {
         target: "http://127.0.0.1:5001",

@@ -96,13 +96,14 @@ const trainIcon = new URL("../assets/icons/train.svg", import.meta.url).href;
 </script>
 
 <template>
+  <!-- Bus Row Pill -->
   <div
-    class="flex flex-row justify-between items-center ml-8 mr-8 py-3 border-b border-gray-300"
+    class=" w-full flex flex-row justify-between items-center py-3 bg-[#FFFFFF] rounded-xl px-6"
     :class="cancelled ? 'opacity-75' : ''"
   >
     <div class="flex flex-row items-center gap-8">
       <span
-        class="inline-flex items-center justify-center w-22 h-16 text-2xl font-black rounded-lg"
+        class="inline-flex shrink-0 items-center justify-center w-20 md:w-24 h-14 md:h-16 text-xl md:text-2xl font-black rounded-lg transition-all"
         :class="[
           props.bus.route_id === '171'
             ? 'bg-[#FF5BB2] text-black'
@@ -114,7 +115,7 @@ const trainIcon = new URL("../assets/icons/train.svg", import.meta.url).href;
       </span>
 
       <div
-        class="flex flex-col text-black font-bold bg-[#F8F8F8] opacity-90 rounded-xl w-150 px-4 py-1"
+        class="flex flex-col text-black font-bold  opacity-90 rounded-xl min-w-0 px-4 py-1"
         :class="cancelled ? 'opacity-60' : ''"
       >
         <div class="flex flex-row items-center gap-2">
@@ -132,15 +133,15 @@ const trainIcon = new URL("../assets/icons/train.svg", import.meta.url).href;
             <circle cx="12" cy="12" r="10" />
             <path d="M12 8l4 4-4 4M8 12h7" />
           </svg>
-          <span class="font-bold text-2xl">{{ props.bus.direction }}</span>
+          <span class="font-bold text-2xl md:text-2xl truncate">{{ props.bus.direction }}</span>
         </div>
 
-        <div class="text-xl">{{ props.bus.location }}</div>
+        <div class="text-xl md:text-xl truncate">{{ props.bus.location }}</div>
       </div>
     </div>
 
-    <div class="flex flex-row items-center gap-8">
-      <!-- NEW: Cancelled pill -->
+    <div class="flex flex-row items-center gap-8 md:gap-6 shrink-0">
+      <!-- Cancelled pill -->
       <div
         v-if="cancelled"
         class="flex flex-row items-center gap-2 bg-red-500 text-white rounded-xl px-4 py-2 font-bold text-lg"
@@ -173,11 +174,11 @@ const trainIcon = new URL("../assets/icons/train.svg", import.meta.url).href;
       <!-- Arrival time (always show but different styling if cancelled) -->
       <div class="flex flex-row gap-1">
         <div
-          class="flex flex-box text-black font-bold text-xl rounded-xl px-3 py-1"
+          class="flex flex-box text-black font-extrabold text-lg md:text-xl rounded-xl px-2 md:px-3 py-1"
           :class="[
             cancelled 
-              ? 'bg-gray-300 text-gray-600' 
-              : 'bg-[#F8F8F8] opacity-90'
+              ? 'bg-[#ff5675] text-black' 
+              : ' opacity-90'
           ]"
         >
           {{ displayTime }}
@@ -200,7 +201,7 @@ const trainIcon = new URL("../assets/icons/train.svg", import.meta.url).href;
       
       <!-- Occupancy (dimmed if cancelled) -->
       <div
-        class="flex flex-row rounded-xl px-3 py-2 gap-1 w-32 justify-center"
+        class="hidden sm:flex flex-row rounded-xl px-2 md:px-3 py-2 gap-1 w-24 md:w-32 justify-center"
         :class="[
           cancelled ? 'bg-gray-300' : currentOccupancy.bgColor
         ]"

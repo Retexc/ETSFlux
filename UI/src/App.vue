@@ -90,6 +90,15 @@ watch(() => route.path, (newPath) => {
   }
 }, { immediate: true });
 
+// Surveiller l'état de connexion pour démarrer/arrêter le timer
+watch(() => authStore.isAuthenticated, (isConnected) => {
+  if (isConnected && !publicRoutes.includes(route.path)) {
+    authStore.startInactivityTimer();
+  } else {
+    authStore.clearInactivityTimer();
+  }
+});
+
 watch(() => authStore.user, (newUser) => {
   if (!newUser && !publicRoutes.includes(route.path)) {
     console.log('👋 Utilisateur déconnecté - Redirection vers /login');

@@ -146,9 +146,10 @@ const loadAnnonces = async () => {
     await annonceStore.chargerAnnonces()
     const annonces = annonceStore.annonces
     
-    // Filtrer les annonces avec média OU avec linkURL
+    // Filtrer les annonces avec média OU avec linkURL, ET qui sont activées
     const validAnnonces = annonces.filter(a => 
-      a.media !== null || (a.linkURL && a.linkURL.trim() !== '')
+      (a.enabled !== false) && // Default to true if undefined
+      (a.media !== null || (a.linkURL && a.linkURL.trim() !== ''))
     )
     
     console.log('📊 [PREVIEW] Annonces valides trouvées:', validAnnonces.length)

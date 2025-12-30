@@ -133,14 +133,14 @@ onUnmounted(() => {
       </div>
     </transition>
 
-    <div class="hidden md:flex flex-col h-screen w-64 text-black bg-[#FFFFFF] border-r border-gray-200">
+    <div class="hidden md:flex flex-col h-[100dvh] w-64 text-black bg-[#FFFFFF] border-r border-gray-200">
       <div class="py-4 px-6">
         <a href="/">
           <img :src="logo" alt="ETSFlux logo" class="w-40 mb-2 mt-8 -ml-1" />
         </a>
       </div>
 
-      <nav class="flex-1 overflow-y-auto">
+      <nav class="flex-1 overflow-y-auto min-h-0">
         <div class="mb-10">
           <router-link
             to="/console"

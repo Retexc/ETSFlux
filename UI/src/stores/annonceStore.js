@@ -1,3 +1,5 @@
+// Import devStorage helper for IndexedDB operations
+import { devStorage } from '../lib/devStorage.js';
 import { defineStore } from 'pinia'
 import { supabase } from '../lib/supabaseClient.js'
 
@@ -17,7 +19,7 @@ export const useAnnonceStore = defineStore('annonce', {
   },
 
   actions: {
-    // 📤 Sauvegarder les annonces dans Supabase
+    // Sauvegarder les annonces dans Supabase
     async sauvegarderAnnonces(annonces) {
       try {
         console.log('💾 Sauvegarde des annonces dans Supabase...')
@@ -65,7 +67,26 @@ export const useAnnonceStore = defineStore('annonce', {
       }
     },
 
-    // 📥 Charger les annonces depuis Supabase
+    // HELPER: Restore Blob URL from IndexedDB in Dev Mode
+    async restoreDevMedia(annonce) {
+      if (import.meta.env.DEV && annonce.media) {
+        try {
+          // In dev mode, 'media' is the path/key in IDB
+          const blob = await devStorage.getFile(annonce.media);
+          if (blob) {
+            const objectUrl = URL.createObjectURL(blob);
+            annonce.mediaURL = objectUrl;
+            console.log('🔧 DEV MODE: Restored media from IDB:', annonce.media);
+          } else {
+            console.warn('� DEV MODE: Media not found in IDB:', annonce.media);
+          }
+        } catch (e) {
+          console.error('🔧 DEV MODE: Error loading media from IDB:', e);
+        }
+      }
+    },
+
+    //  Charger les annonces depuis Supabase
     async chargerAnnonces() {
       try {
         console.log('📥 Chargement des annonces depuis Supabase...')
@@ -102,17 +123,21 @@ export const useAnnonceStore = defineStore('annonce', {
         console.log('📄 Annonces brutes chargées:', annonces.length)
         
         // 🔧 IMPORTANT : Reconstruire les mediaURL pour chaque annonce
-        annonces.forEach(annonce => {
+        for (const annonce of annonces) { 
           if (annonce.media) {
-            // Reconstruire l'URL publique depuis le nom du fichier
-            const { data: urlData } = supabase.storage
-              .from('backgrounds')
-              .getPublicUrl(annonce.media)
             
-            annonce.mediaURL = urlData.publicUrl
-            console.log('🔗 URL reconstruite:', annonce.nom, '→', urlData.publicUrl)
+            if (import.meta.env.DEV) {
+               await this.restoreDevMedia(annonce);
+            } else {
+               // Prod logic
+               const { data: urlData } = supabase.storage
+                 .from('backgrounds')
+                 .getPublicUrl(annonce.media)
+               annonce.mediaURL = urlData.publicUrl
+               console.log('🔗 URL reconstruite:', annonce.nom, '→', urlData.publicUrl)
+            }
           }
-        })
+        }
         
         this.annonces = annonces
         console.log('✅ Annonces chargées depuis Supabase:', annonces.length, 'pages')
@@ -129,8 +154,8 @@ export const useAnnonceStore = defineStore('annonce', {
       }
     },
 
-    // 📂 Charger depuis localStorage (fallback)
-    chargerLocal() {
+    // Charger depuis localStorage (fallback)
+    async chargerLocal() { 
       const saved = localStorage.getItem('annonces')
       if (saved) {
         try {
@@ -138,16 +163,20 @@ export const useAnnonceStore = defineStore('annonce', {
           console.log('📄 Annonces depuis localStorage:', annonces.length)
           
           // 🔧 Reconstruire les mediaURL pour chaque annonce
-          annonces.forEach(annonce => {
+          for (const annonce of annonces) { 
             if (annonce.media) {
-              const { data: urlData } = supabase.storage
-                .from('backgrounds')
-                .getPublicUrl(annonce.media)
-              
-              annonce.mediaURL = urlData.publicUrl
-              console.log('🔗 URL reconstruite (local):', annonce.nom)
+                if (import.meta.env.DEV) {
+                   await this.restoreDevMedia(annonce);
+                } else {
+                  const { data: urlData } = supabase.storage
+                    .from('backgrounds')
+                    .getPublicUrl(annonce.media)
+                  
+                  annonce.mediaURL = urlData.publicUrl
+                  console.log('🔗 URL reconstruite (local):', annonce.nom)
+                }
             }
-          })
+          }
           
           this.annonces = annonces
           console.log('✅ Annonces chargées depuis localStorage')

@@ -58,30 +58,38 @@ const statusColor = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-row justify-between items-center ml-8 mr-8 border-b border-gray-300  px-4">
-    <div class="flex flex-row items-center gap-8">
-      <img :src="lineIcon" :alt="`${props.line.color} line`" class="w-18 h-18 mt-4"></img>
+  <div class="w-full flex flex-row justify-between items-center bg-[#FFFFFF] rounded-xl px-4 md:px-6 py-3 gap-4">
+    
+    <div class="flex flex-row items-center gap-4 md:gap-6 flex-1 min-w-0">
+      
+      <img 
+        :src="lineIcon" 
+        :alt="`${props.line.color} line`" 
+        class="w-12 h-12 ml-4 md:w-16 md:h-16 shrink-0" 
+      />
 
-      <div class="flex flex-col text-black font-bold bg-[#F8F8F8] opacity-90 rounded-xl w-150 px-4 py-1 ">
+      <div class="flex flex-col text-black font-bold opacity-90 rounded-xl min-w-0 ml-10">
         <div class="flex flex-row items-center gap-2">
-          <h1 class="text-2xl">{{ props.line.name }}</h1>       
+          <h1 class="text-xl md:text-2xl truncate">{{ props.line.name }}</h1>       
         </div>
-        <h1 class="text-xl">{{ props.line.color }}</h1>
+        <h1 class="text-lg md:text-xl truncate">{{ props.line.color }}</h1>
       </div>
     </div>
 
-    <div class="flex flex-row items-center gap-8">
+    <div class="flex flex-row items-center shrink-0">
       <div class="flex flex-col items-end">
-        <!-- Only show green status when service is normal -->
-        <h1 v-if="showGreenStatus" class="font-bold text-xl bg-green-500 rounded-xl text-black pr-4 pl-4 py-1.5">
+        
+        <h1 v-if="showGreenStatus" class="font-bold text-lg md:text-xl bg-green-500 rounded-xl text-black px-3 md:px-4 py-1.5 whitespace-nowrap">
           {{ cleanStatus }}
         </h1>
         
-        <!-- Show red disruption indicator when service is not normal -->
-        <div v-if="!props.line.is_normal" class="flex items-center gap-4 mt-1">
-          <div class="w-4 h-4 bg-red-400 rounded-full animate-pulse"></div>
-          <span class="font-bold text-xl bg-red-400 rounded-xl text-black pr-4 pl-4 py-1.5">Service perturbé</span>
+        <div v-if="!props.line.is_normal" class="flex items-center gap-2 md:gap-4 mt-1">
+          <div class="w-3 h-3 md:w-4 md:h-4 bg-red-400 rounded-full animate-pulse shrink-0"></div>
+          <span class="font-bold text-lg md:text-xl bg-red-400 rounded-xl text-black px-3 md:px-4 py-1.5 whitespace-nowrap">
+            Service perturbé
+          </span>
         </div>
+
       </div>
     </div>
   </div>

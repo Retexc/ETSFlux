@@ -21,19 +21,19 @@ const routes = [
     path: "/login",
     name: "Login",
     component: Login,
-    meta: { requiresAuth: false }, 
+    meta: { requiresAuth: false },
   },
   {
     path: "/password",
     name: "Password",
     component: Password,
-    meta: { requiresAuth: false }, 
+    meta: { requiresAuth: false },
   },
   {
     path: "/display",
     name: "Display",
     component: Announcement,
-    meta: { requiresAuth: false }, 
+    meta: { requiresAuth: false },
   },
   {
     path: "/forgot-password",
@@ -47,32 +47,32 @@ const routes = [
     component: ResetPassword,
     meta: { requiresAuth: false },
   },
+  {
+    path: "/stm",
+    name: "STM",
+    component: MainDisplay,
+    meta: { requiresAuth: false },
+  },
   // ==========================================
   // ROUTES PROTÉGÉES (besoin d'être connecté)
   // ==========================================
   {
     path: "/",
     name: "Home",
-    component: Console, 
-    meta: { requiresAuth: true }, 
+    component: Console,
+    meta: { requiresAuth: true },
   },
   {
     path: "/editor",
     name: "Editor",
     component: Editor,
-    meta: { requiresAuth: true }, 
+    meta: { requiresAuth: true },
   },
   {
     path: "/settings",
     name: "Settings",
     component: Settings,
-    meta: { requiresAuth: true }, 
-  },
-  {
-    path: "/stm",
-    name: "STM",
-    component: MainDisplay,
-    meta: {requiresAuth : true},
+    meta: { requiresAuth: true },
   },
 
   // ==========================================
@@ -80,7 +80,7 @@ const routes = [
   // ==========================================
   {
     path: "/:pathMatch(.*)*",
-    redirect: "/login", 
+    redirect: "/login",
   },
 ];
 
