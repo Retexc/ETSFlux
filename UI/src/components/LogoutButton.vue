@@ -3,9 +3,9 @@
     <!-- email de l'utilisateur -->
     <div
       v-if="authStore.isAuthenticated"
-      class="p-2 px-8 bg-gray-100 rounded-lg"
+      class="p-2 px-8 bg-gray-100 rounded-lg w-full"
     >
-      <p class="text-sm text-gray-700 font-medium truncate">
+      <p class="text-sm text-gray-700 font-medium truncate flex justify-center">
         {{ authStore.userEmail }}
       </p>
     </div>
@@ -14,7 +14,7 @@
     <button
       @click="handleLogout"
       :disabled="loading"
-      class="flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-md active:scale-95"
+      class="flex w-full items-center justify-center gap-2 px-4 py-2.5 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-md active:scale-95"
       title="Se déconnecter"
     >
       <svg

@@ -30,15 +30,41 @@ if (import.meta.env.DEV) {
     user: mockUser
   }
 
+  // Mock State
+  let isMockAuthenticated = true;
+  let authSubscribers = [];
+
+  const notifySubscribers = (event, session) => {
+    authSubscribers.forEach(cb => cb(event, session));
+  };
+
   supabaseInstance = {
     auth: {
-      getUser: async () => ({ data: { user: mockUser }, error: null }),
-      signInWithPassword: async () => ({ data: { user: mockUser, session: mockSession }, error: null }),
-      signOut: async () => ({ error: null }),
+      getUser: async () => {
+         if (!isMockAuthenticated) return { data: { user: null }, error: null };
+         return { data: { user: mockUser }, error: null };
+      },
+      signInWithPassword: async () => {
+         isMockAuthenticated = true;
+         notifySubscribers('SIGNED_IN', mockSession);
+         return { data: { user: mockUser, session: mockSession }, error: null };
+      },
+      signOut: async () => {
+         isMockAuthenticated = false;
+         notifySubscribers('SIGNED_OUT', null);
+         return { error: null };
+      },
       onAuthStateChange: (cb) => {
-        // Immediately trigger signed in state
-        setTimeout(() => cb('SIGNED_IN', mockSession), 0)
-        return { data: { subscription: { unsubscribe: () => {} } } }
+        authSubscribers.push(cb);
+        // Immediately trigger current state
+        if (isMockAuthenticated) {
+           setTimeout(() => cb('SIGNED_IN', mockSession), 0);
+        } else {
+           setTimeout(() => cb('SIGNED_OUT', null), 0);
+        }
+        return { data: { subscription: { unsubscribe: () => {
+            authSubscribers = authSubscribers.filter(sub => sub !== cb);
+        } } } };
       },
       updateUser: async () => ({ data: { user: mockUser }, error: null })
     },
