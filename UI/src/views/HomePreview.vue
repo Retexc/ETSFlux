@@ -57,10 +57,10 @@ onBeforeUnmount(() => {
       <Preview />
     </motion.div>
 
-    <div class="md:hidden w-full p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-white border-t border-gray-200 shrink-0 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+    <div class="md:hidden w-full p-4 pb-[calc(5rem+env(safe-area-inset-bottom))] bg-white border-t border-gray-200 shrink-0 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
       <button
         @click="handleAccessClick"
-        class="w-full py-4 bg-[#3B82F6] hover:bg-[#2563EB] text-white font-bold rounded-lg text-lg shadow-lg flex items-center justify-center gap-2"
+        class="w-full py-4 bg-[#3B82F6] hover:bg-[#2563EB] text-black font-extrabold rounded-lg text-lg shadow-lg flex items-center justify-center gap-2"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
           <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
@@ -78,7 +78,7 @@ onBeforeUnmount(() => {
         <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
         <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/>
       </svg>
-      Accéder au tableau
+      Accéder à l'afficheur
     </button>
 
     <div v-if="showMobileWarning" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -88,7 +88,7 @@ onBeforeUnmount(() => {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
         </div>
-        <h3 class="text-xl font-bold text-gray-900 mb-2">Attention Mobile</h3>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Attention</h3>
         <p class="text-gray-600 mb-6">
           L'affichage est optimisé pour les télévisions et les grands écrans. L'expérience sur mobile peut être inadaptée.
         </p>
