@@ -1,14 +1,11 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, computed } from "vue";
-import { API_URL } from '../config.js'
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import { useTransit } from "../composables/useTransit.js";
 
 const currentDate = ref('');
 const currentTime = ref('');
-const weather = ref({
-  icon: '',
-  text: '',
-  temp: ''
-});
+// Météo lue une seule fois pour tout l'écran (composables/useTransit.js)
+const { weather } = useTransit();
 
 // Holiday Logic
 const holidayMessage = ref(null);
@@ -70,87 +67,34 @@ const checkHoliday = () => {
   holidayMessage.value = null;
 };
 
+let dateInterval = null;
 let timeInterval = null;
-let weatherInterval = null;
 let displayInterval = null;
 
 const updateTime = () => {
-  const now = new Date();
-  
-  currentTime.value = now.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  });
+  currentTime.value = new Date().toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Toronto' });
 };
 
 const updateDate = () => {
-  const now = new Date();
-  
-  currentDate.value = now.toLocaleDateString('fr-CA', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-  
-  // Update holiday check daily (or every minute, cheap op)
+  currentDate.value = new Date().toLocaleDateString('fr-CA', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Toronto' });
   checkHoliday();
-};
-
-const fetchWeatherData = async () => {
-  try {
-    const response = await fetch(`${API_URL}/api/data`);
-    const data = await response.json();
-    
-    if (data.weather) {
-      weather.value = {
-        icon: data.weather.icon || '',
-        text: data.weather.text || '',
-        temp: data.weather.temp !== undefined ? data.weather.temp : '' 
-      };
-    }
-  } catch (error) {
-    console.error('Error fetching weather data:', error);
-  }
 };
 
 onMounted(() => {
   updateDate();
-  checkHoliday(); // Initial check
-  timeInterval = setInterval(updateDate, 60000); 
-
   updateTime();
-  // Ensure we don't leak intervals if updateTime was adding one (it wasn't previously, but logic was slightly odd in diff)
-  // Just keeping original structure:
-  // Note: Previous code had `timeInterval = setInterval(updateTime, 1000)` overwriting the first one. 
-  // Let's fix that bug too.
-  const secondInterval = setInterval(updateTime, 1000);
-  
-  fetchWeatherData();
-  weatherInterval = setInterval(fetchWeatherData, 30000); // Update every 30 seconds
-  
-  // Toggle interval (Cycle every 10 seconds)
+  dateInterval = setInterval(updateDate, 60000);
+  timeInterval = setInterval(updateTime, 1000);
+  // Alterne météo et message de fête toutes les 10 secondes
   displayInterval = setInterval(() => {
-    if (holidayMessage.value) {
-      showWeather.value = !showWeather.value;
-    } else {
-      showWeather.value = true;
-    }
+    showWeather.value = holidayMessage.value ? !showWeather.value : true;
   }, 10000);
-  
-  // Store intervals properly to clear them
-  // Since we have multiple, let's use a list or separate vars?
-  // Previous code used `timeInterval` twice.
-  // I will just add `secondInterval` to cleanup.
-  onBeforeUnmount(() => { // Using inline here just to capture scopes if needed, but better to put in main scope
-    clearInterval(secondInterval);
-  });
 });
 
 onBeforeUnmount(() => {
-  if (timeInterval) clearInterval(timeInterval);
-  if (weatherInterval) clearInterval(weatherInterval);
-  if (displayInterval) clearInterval(displayInterval);
+  clearInterval(dateInterval);
+  clearInterval(timeInterval);
+  clearInterval(displayInterval);
 });
 </script>
 
@@ -194,7 +138,7 @@ onBeforeUnmount(() => {
 
     <!-- RIGHT SIDE: Date + Time -->
     <div class="flex flex-row items-center gap-4 mr-6">
-      <h1 class="text-black font-bold text-3xl">{{ currentDate }}</h1>       
+      <h1 class="text-black font-bold text-3xl first-letter:uppercase">{{ currentDate }}</h1>       
       <h1 class="text-black font-bold text-3xl">{{ currentTime }}</h1>
     </div>
   </div>

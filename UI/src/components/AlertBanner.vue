@@ -1,79 +1,24 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { computed } from "vue";
+import { useTransit } from "../composables/useTransit.js";
 
-const alerts = ref([]);
-const allAlertsText = ref('');
-const showBanner = ref(false);
-let alertInterval = null;
+// Alertes STM lues une seule fois pour tout l'écran (composables/useTransit.js)
+const { alerts } = useTransit();
 
-const fetchAlerts = async () => {
-  try {
-    console.log('Fetching alerts from /api/data...');
-    const response = await fetch('/api/data');
-    const data = await response.json();
-    
-    console.log('API Response:', data);
-    
-    if (data.alerts && data.alerts.length > 0) {
-      // Remove duplicate alerts
-      const uniqueAlerts = data.alerts.filter((alert, index, arr) => {
-        const alertKey = `${alert.header}-${alert.description}-${alert.routes}-${alert.alert_type || ''}`;
-        return arr.findIndex(a => `${a.header}-${a.description}-${a.routes}-${a.alert_type || ''}` === alertKey) === index;
-      });
-      
-      alerts.value = uniqueAlerts;
-      console.log('Unique alerts:', uniqueAlerts);
-      
-      // Format alerts for display
-      const combinedAlerts = uniqueAlerts
-        .map((alert) => {
-          // GENERAL NETWORK ALERTS (whole STM network)
-          if (alert.alert_type === "general_network") {
-            return `🚨 RÉSEAU STM: ${alert.header} - ${alert.description}`;
-          } 
-          // ROUTE-SPECIFIC ALERTS (buses 36, 61)
-          else if (alert.alert_type === "route_specific") {
-            return `🚌 Ligne(s) ${alert.routes}: ${alert.header} - ${alert.description}`;
-          } 
-          // METRO ALERTS
-          else if (alert.alert_type === "metro") {
-            return `🚇 ${alert.header}: ${alert.description}`;
-          } 
-          // CUSTOM MESSAGES
-          else if (alert.routes === "Custom" && alert.stop === "Message") {
-            return `📢 ${alert.header}: ${alert.description}`;
-          }
-          // FALLBACK FORMAT
-          else {
-            return `${alert.header}: ${alert.description}`;
-          }
-        })
-        .join(" ••• ");
-      
-      allAlertsText.value = combinedAlerts;
-      showBanner.value = true;
-      console.log('Banner showing with text:', combinedAlerts);
-    } else {
-      console.log('No alerts found, hiding banner');
-      showBanner.value = false;
-    }
-  } catch (error) {
-    console.error('Error fetching alerts:', error);
-    showBanner.value = false;
-  }
-};
+const cle = (a) => `${a.header}-${a.description}-${a.routes}-${a.alert_type || ""}`;
 
-onMounted(() => {
-  console.log('AlertBanner mounted, fetching initial alerts...');
-  fetchAlerts();
-  alertInterval = setInterval(fetchAlerts, 30000); // Update every 30 seconds
+const allAlertsText = computed(() => {
+  const uniques = alerts.value.filter((a, i, arr) => arr.findIndex((b) => cle(b) === cle(a)) === i);
+  return uniques
+    .map((a) => {
+      if (a.alert_type === "general_network") return `🚨 RÉSEAU STM : ${a.header} - ${a.description}`;
+      if (a.alert_type === "route_specific") return `🚌 Ligne(s) ${a.routes} : ${a.header} - ${a.description}`;
+      if (a.alert_type === "metro") return `🚇 ${a.header} : ${a.description}`;
+      return `${a.header} : ${a.description}`;
+    })
+    .join(" ••• ");
 });
-
-onBeforeUnmount(() => {
-  if (alertInterval) {
-    clearInterval(alertInterval);
-  }
-});
+const showBanner = computed(() => allAlertsText.value.length > 0);
 </script>
 
 <template>

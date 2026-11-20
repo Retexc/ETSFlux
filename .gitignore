@@ -49,3 +49,5 @@ Thumbs.db
 #GTFS
 STM/
 Exo/
+# Horaires STM téléchargés au démarrage (Supabase ou STM)
+backend/GTFS/
