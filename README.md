@@ -3,7 +3,7 @@
 # ETSignage — écran du salon étudiant (AMÉUX)
 
 Affiche sur la TV du salon (design Figma « ETS Flux ») : un en-tête (logo, date, météo, heure), les annonces de
-l'AMÉUX en image ou en vidéo, les prochains passages **STM** (lignes 61 et 36, avec l'achalandage), les trains **exo**
+l'AMÉUX en image, en vidéo ou en **annonce simple** (texte sur un fond de couleur, avec une image ou un code QR), les prochains passages **STM** (lignes 61 et 36, avec l'achalandage), les trains **exo**
 au départ de la gare Lucien-L'Allier (Candiac, Saint-Jérôme, Vaudreuil) et des **photos d'ambiance** (écran de veille, avec la notice de la télécommande).
 
 - Bandeau du bas : messages de l'ÉTS / de l'AMÉUX sur toutes les diapositives ; alertes STM seulement sur les

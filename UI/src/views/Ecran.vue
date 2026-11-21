@@ -9,12 +9,13 @@ import Jumelage from "../components/Jumelage.vue";
 import DiapoStm from "./diapos/DiapoStm.vue";
 import DiapoExo from "./diapos/DiapoExo.vue";
 import DiapoVeille from "./diapos/DiapoVeille.vue";
+import DiapoSimple from "./diapos/DiapoSimple.vue";
 import { useTransit } from "../composables/useTransit.js";
 import { garderLiens, jeton, lireListe } from "../lib/flux.js";
 
 /**
  * Écran du salon (Figma « ETS Flux ») : les diapositives choisies dans AMÉUX Flux, dans leur ordre et avec
- * leur durée (images, vidéos, STM, trains exo, photos d'ambiance).
+ * leur durée (images, vidéos, annonces simples, STM, trains exo, photos d'ambiance).
  * - Bandeau d'annonces (messages de l'ÉTS / de l'AMÉUX) : en bas de TOUTES les diapositives.
  * - Alertes STM : seulement sur les diapositives de transport (pas de surcharge ailleurs).
  * - Notice de la télécommande : toujours sur les photos d'ambiance, et de temps à autre sur les autres.
@@ -88,7 +89,7 @@ function programmer() {
   const ms = d.duree_s ? d.duree_s * 1000 : d.type === "video" ? VIDEO_MAX_MS : 10_000;
   minuterieDiapo = setTimeout(suivante, ms);
   const s = liste.value[(index.value + 1) % liste.value.length];
-  if (s?.type === "image" && s.url) new Image().src = s.url;
+  if ((s?.type === "image" || s?.type === "simple") && s.url) new Image().src = s.url;
   if (s?.type === "veille" && galerie.value.length) new Image().src = galerie.value[(photoIndex.value + 1) % galerie.value.length].url;
 }
 
@@ -126,6 +127,7 @@ onBeforeUnmount(() => {
         <DiapoStm v-if="actuelle.type === 'stm'" />
         <DiapoExo v-else-if="actuelle.type === 'exo'" />
         <DiapoVeille v-else-if="actuelle.type === 'veille'" :photo="photo" />
+        <DiapoSimple v-else-if="actuelle.type === 'simple' && actuelle.simple" :simple="actuelle.simple" :url="actuelle.url" />
         <template v-else>
           <!-- Image ou vidéo de l'AMÉUX : en-tête blanc, puis le fichier sur fond noir -->
           <Entete />
