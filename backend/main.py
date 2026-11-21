@@ -1,11 +1,16 @@
-# app.py
-import os, sys, logging
+"""
+ETSignage : API de l'écran du salon (prochains passages STM, alertes, métro, météo).
+Les annonces de l'écran se gèrent dans AMÉUX Flux ; ce serveur ne calcule que les données de transport.
+
+GET /api/data   : tout (bus, métro, alertes, météo), gardé 20 secondes en mémoire
+GET /api/meteo  : météo seulement (léger)
+"""
+import os, logging, threading, time
 from flask_cors import CORS
 from flask import Flask, jsonify
 
 # ────── PACKAGE IMPORTS ───────────────────────────────────────
-from .config            import BUS_ROUTES
-from .utils             import is_service_unavailable
+from .config            import BUS_ROUTES, BUS_STOP_IDS
 
 from .loaders.stm       import (
     fetch_stm_alerts,
@@ -16,30 +21,58 @@ from .loaders.stm       import (
 
 from .alerts import process_stm_alerts
 
-# New Imports
 from .loaders.gtfs_loader import download_gtfs_data, load_gtfs_data
+from .loaders.gtfs_update import telecharger_et_filtrer
 from .managers.weather_manager import get_weather
 
 # ────────────────────────────────────────────────────────────────
 
-print("__name__:", __name__)
-print("__package__:", __package__)
-print("sys.path:", sys.path)
-
 logger = logging.getLogger('BdeB-GTFS')
 app = Flask(__name__)
-CORS(app)
+# Données publiques en lecture seule : tout site peut les lire, mais seulement en GET
+CORS(app, methods=["GET"])
 PACKAGE_DIR = os.path.dirname(os.path.abspath(__file__))
 GTFS_BASE = os.path.join(PACKAGE_DIR, "GTFS")  # points to backend/GTFS
 STM_DIR = os.path.join(GTFS_BASE, "stm")
 
 os.makedirs(STM_DIR, exist_ok=True)
 
-# ─── Download GTFS files from Supabase on startup (production only) ────────
+# ─── Horaires STM (GTFS) ──────────────────────────────────────
+# 1. Au démarrage : fichiers déjà filtrés gardés dans Supabase (bucket gtfs-files), rapides à lire.
+# 2. Absents : téléchargés directement de la STM et filtrés (loaders/gtfs_update.py).
+# 3. Ensuite, chaque semaine : mis à jour depuis la STM, sans intervention (GTFS_AUTO=non pour couper).
 download_gtfs_data(STM_DIR)
-
-# ─── check for required GTFS files ────────────────────────────
 routes_map, stm_trips, stm_stop_times = load_gtfs_data(STM_DIR)
+
+MAJ_GTFS_JOURS = 7
+_verrou_gtfs = threading.Lock()
+
+
+def mettre_a_jour_gtfs():
+    """Télécharge le GTFS de la STM, filtre, puis recharge les horaires en mémoire. Faux si ça échoue."""
+    global routes_map, stm_trips, stm_stop_times
+    try:
+        telecharger_et_filtrer(STM_DIR, BUS_ROUTES, BUS_STOP_IDS)
+        nouveaux = load_gtfs_data(STM_DIR)
+        with _verrou_gtfs:
+            routes_map, stm_trips, stm_stop_times = nouveaux
+        return True
+    except Exception as e:
+        # Anciens horaires gardés : mieux vaut des horaires un peu vieux que pas d'horaires
+        logger.error(f"[GTFS] Mise à jour impossible, anciens horaires gardés : {e}")
+        return False
+
+
+def boucle_gtfs():
+    if not stm_trips:
+        mettre_a_jour_gtfs()
+    while True:
+        time.sleep(MAJ_GTFS_JOURS * 24 * 3600)
+        mettre_a_jour_gtfs()
+
+
+if os.getenv("GTFS_AUTO", "oui").lower() not in ("non", "0", "false") and os.getenv("ENVIRONMENT") != "development":
+    threading.Thread(target=boucle_gtfs, name="gtfs", daemon=True).start()
 
 # ====================================================================
 # Metro Alerts Processing Functions
@@ -268,15 +301,35 @@ def index():
         "status": "ok",
         "message": "ETS Flux API is running",
         "endpoints": {
-            "data": "/api/data"
+            "data": "/api/data",
+            "meteo": "/api/meteo"
         }
     })
 
+# Réponse gardée en mémoire : plusieurs écrans (et plus tard le Roku) ne relancent pas tout le calcul
+CACHE_SECONDES = 20
+_cache = {"ts": 0.0, "corps": None}
+_verrou = threading.Lock()
+
+
 @app.route('/api/data', methods=['GET'])
 def get_data():
-    """
-    Main API endpoint that returns all transit data
-    """
+    with _verrou:
+        if _cache["corps"] is not None and time.time() - _cache["ts"] < CACHE_SECONDES:
+            return jsonify(_cache["corps"]), 200
+        corps, code = calculer_donnees()
+        if code == 200:
+            _cache.update(ts=time.time(), corps=corps)
+        return jsonify(corps), code
+
+
+@app.route('/api/meteo', methods=['GET'])
+def get_meteo():
+    return jsonify(get_weather()), 200
+
+
+def calculer_donnees():
+    """Bus, métro, alertes et météo, calculés à partir du GTFS et des API de la STM."""
     try:
         # Process metro alerts first
         metro_lines = process_metro_alerts()
@@ -333,30 +386,32 @@ def get_data():
         # ========== STM BUSES WITH OCCUPANCY ==========
         buses = []
         try:
+            # Horaires lus d'un coup (la mise à jour hebdomadaire peut les remplacer à tout moment)
+            with _verrou_gtfs:
+                g_routes, g_trips, g_stop_times = routes_map, stm_trips, stm_stop_times
 
-            
             stm_trip_entities = fetch_stm_realtime_data()
-            # FIX: Pass routes_map so vehicle positions can convert GTFS IDs to short names
-            positions_dict = fetch_stm_positions_dict(BUS_ROUTES, stm_trips, routes_map)
+            # routes_map : convertit les identifiants GTFS en numéros de ligne
+            positions_dict = fetch_stm_positions_dict(BUS_ROUTES, g_trips, g_routes)
             
             # Debug: Log how many vehicle positions we got
-            logger.info(f"[OCCUPANCY] Fetched {len(positions_dict)} vehicle positions")
+            logger.debug(f"[OCCUPANCY] Fetched {len(positions_dict)} vehicle positions")
             if len(positions_dict) > 0:
                 # Show first few for debugging
                 for i, ((route, trip), pos_data) in enumerate(list(positions_dict.items())[:3]):
-                    logger.info(f"  Position {i+1}: Route={route}, Trip={trip}, Occ={pos_data.get('occupancy')}")
+                    logger.debug(f"  Position {i+1}: Route={route}, Trip={trip}, Occ={pos_data.get('occupancy')}")
             else:
                 logger.warning("[OCCUPANCY] No vehicle positions found - occupancy will show as 'Unknown'")
             
             buses = process_stm_trip_updates(
                 stm_trip_entities,
-                stm_trips,
-                stm_stop_times,
+                g_trips,
+                g_stop_times,
                 positions_dict
             )
 
             # Enhanced debug logging for occupancy
-            logger.info("----- DEBUG: Final Merged STM Buses with Occupancy -----")
+            logger.debug("----- DEBUG: Final Merged STM Buses with Occupancy -----")
             status_map = {0: "INCOMING_AT", 1: "STOPPED_AT", 2: "IN_TRANSIT_TO"}
             
             for b in buses:
@@ -368,14 +423,14 @@ def get_data():
                 
                 # Log occupancy information
                 occupancy = b.get("occupancy", "Unknown")
-                logger.info(
+                logger.debug(
                     f"Route={b['route_id']}, Trip={b['trip_id']}, "
                     f"Stop={b['stop_id']}, ArrTime={b['arrival_time']}, "
                     f"Occupancy={occupancy}, AtStop={b['at_stop']}, "
                     f"Lat={b.get('lat')}, Lon={b.get('lon')}, Dist={b.get('distance_m')}m, "
                     f"currentStatus={stat_str}"
                 )
-            logger.info("-----------------------------------------")
+            logger.debug("-----------------------------------------")
 
             buses = merge_alerts_into_buses(buses, processed_stm if 'processed_stm' in locals() else [])
         except Exception as e:
@@ -399,13 +454,13 @@ def get_data():
             }
         }
 
-        return jsonify(response), 200
-        
+        return response, 200
+
     except Exception as e:
         logger.error(f"Error in get_data: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+        return {"error": "Erreur du serveur"}, 500
 
 if __name__ == '__main__':
     from waitress import serve

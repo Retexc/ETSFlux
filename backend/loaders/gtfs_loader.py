@@ -88,7 +88,7 @@ def load_gtfs_data(stm_dir):
         print("⚠️  Fichiers GTFS manquants:")
         for m in missing:
             print(f"   • {m}")
-        print("\nL'application démarre quand même. Téléchargez les fichiers GTFS via l'interface admin.")
+        print("\nL'application démarre quand même : les horaires seront téléchargés de la STM (loaders/gtfs_update.py).")
         return {}, {}, {}
     else:
         print("📂 Loading GTFS files...")

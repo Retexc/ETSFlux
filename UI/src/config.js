@@ -1,8 +1,8 @@
-const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1'
+// Adresses des services, choisies au build (fichier .env du dossier UI, ou variables de Vercel).
+// Rien de secret ici : ces adresses sont publiques.
 
-export const API_URL = isLocalhost
-  ? 'https://etsignage-backend-dev.onrender.com'
-  : 'https://etsignage-backend.onrender.com'
+/** Serveur Flask d'ETSignage : prochains passages STM, alertes, météo. */
+export const API_URL = (import.meta.env.VITE_API_URL || 'https://etsignage-backend.onrender.com').replace(/\/$/, '')
 
-console.log('🔧 Using API:', API_URL)
+/** AMÉUX Flux : liste des annonces de l'écran (Annonces → Écran du salon). */
+export const FLUX_URL = (import.meta.env.VITE_FLUX_URL || 'https://ameux.vercel.app').replace(/\/$/, '')

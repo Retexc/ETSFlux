@@ -1,21 +1,50 @@
  <img width="4746" height="1582" alt="github_banner" src="https://github.com/user-attachments/assets/929ae648-b4a7-4e47-991f-3f8d4ebfb687" />
-ETSFlux est une application d’affichage dynamique conçue pour le pavillon F de l’École de technologie supérieure. Elle diffuse en temps réel les horaires des bus et trains de la STM, les alertes de service, les niveaux d’achalandage, en s’appuyant sur les données GTFS et GTFS-RT ainsi que les annonces internes.
 
+# ETSignage — écran du salon étudiant (AMÉUX)
 
- ## Fonctionnalités 
+Affiche sur la TV du salon : un bandeau (date, heure, météo), les annonces de l'AMÉUX en image ou en vidéo,
+et les prochains passages STM (lignes 61 et 36, avec l'achalandage) et l'état du métro.
 
+**Les annonces se gèrent dans AMÉUX Flux** : Annonces → Écran du salon (ajout, durée, dates, ordre,
+interrupteurs, bloc STM, aperçu). Ce dépôt ne fait plus qu'afficher.
 
-- Affichage en temps réel des horaires des bus STM
+## Fonctionnement
 
-- Indicateurs d’achalandage (ex. : nombre de places disponibles)
+| Partie | Rôle | Hébergement |
+|---|---|---|
+| `UI/` (Vue 3, Vite, Tailwind) | L'écran : `/` = rotation des annonces de Flux + bloc STM ; `/stm` = STM seulement | Vercel |
+| `backend/` (Flask) | `GET /api/data` (bus, métro, alertes, météo, gardé 20 s) et `GET /api/meteo` | Render |
+| AMÉUX Flux | `GET /api/affichage` : ce qui passe à l'écran maintenant, dans l'ordre | Vercel |
 
-- Alertes et interruptions de service
+- **Jumelage** : la première fois, l'écran demande un code. Dans Flux : Annonces → Écran du salon → « Connecter un écran ».
+  On tape le code sur la TV, ou on ouvre l'adresse `https://<écran>/?code=XXXXXXXX`. L'écran garde ensuite un jeton secret
+  dans son navigateur. « Déconnecter » dans Flux le lui retire.
+- L'écran relit la liste de Flux chaque minute et les données STM toutes les 30 secondes (une seule demande pour tout l'écran).
+  Flux ou Internet en panne : la dernière liste reste affichée. La page se recharge seule une fois par jour.
+- **Horaires STM (GTFS)** : au démarrage, Flask lit les fichiers filtrés du bucket Supabase `gtfs-files` ; s'ils manquent, et
+  ensuite **chaque semaine**, il télécharge le GTFS public de la STM et garde seulement nos lignes et nos arrêts
+  (`backend/loaders/gtfs_update.py`). Un fichier sans nos lignes est refusé : les anciens horaires restent. Lignes et arrêts : `backend/config.py`.
 
-- Interface optimisée pour les écrans muraux
+## Variables
 
-- Panneau d’administration pour la gestion des contenus
+Écran (`UI/.env`, ou Vercel ; voir `UI/.env.example`) : `VITE_API_URL` (Flask), `VITE_FLUX_URL` (Flux). Adresses publiques seulement.
 
-- Éditeur intégré pour la création d’annonces
+Serveur (`.env` à la racine, ou Render ; jamais commité) : `STM_API_KEY`, `WEATHER_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY`
+(lecture du bucket `gtfs-files`), facultatives `GTFS_AUTO=non` (couper la mise à jour automatique), `GTFS_STM_URL`, `GLOBAL_DELAY_MINUTES`.
 
-- Diffusion d’annonces sous forme de vidéos ou d’image
+Dans Flux (Vercel) : `AFFICHAGE_ORIGINES` = adresse de l'écran (ex. `https://ecran.exemple.com`), sinon le navigateur de la TV
+ne peut pas lire la liste ; `AFFICHAGE_URL_ECRAN` (facultative) = même adresse, montrée avec le code de jumelage.
 
+## Lancer en local
+
+```
+cd UI && npm install && npm run dev                       # écran
+waitress-serve --port=5000 backend.main:app            # serveur (depuis la racine)
+```
+
+Tests du serveur : `pip install -r requirements-dev.txt` puis `python -m pytest -q`.
+
+## Plus tard
+
+- `/api/roku` dans Flux : annonces + météo + 4 prochains bus déjà calculés, pour un économiseur d'écran Roku.
+- Horaire d'allumage et d'extinction de la TV, géré depuis Flux.
