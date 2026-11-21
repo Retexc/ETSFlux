@@ -19,6 +19,8 @@ onBeforeUnmount(() => clearInterval(minuterie));
 const TZ = "America/Toronto";
 const date = computed(() => new Intl.DateTimeFormat("fr-CA", { timeZone: TZ, weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(maintenant.value));
 const heure = computed(() => new Intl.DateTimeFormat("fr-CA", { timeZone: TZ, hour: "numeric", minute: "2-digit" }).format(maintenant.value));
+// Icônes de WeatherAPI : version 128 px (plus nette), agrandie car le dessin n'occupe que le centre de l'image
+const icone = computed(() => (weather.value?.icon || "").replace("/64x64/", "/128x128/"));
 const meteo = computed(() => (weather.value?.text ? `${weather.value.temp !== "" ? `${weather.value.temp}°C ` : ""}${weather.value.text}` : ""));
 </script>
 
@@ -30,7 +32,7 @@ const meteo = computed(() => (weather.value?.text ? `${weather.value.temp !== ""
     </div>
     <div class="flex items-center gap-[43px]">
       <div v-if="meteo" class="flex items-center gap-[18px]">
-        <img v-if="weather.icon" :src="weather.icon" alt="" class="size-[42.45px]" />
+        <img v-if="icone" :src="icone" alt="" class="size-[42.45px] scale-[1.7]" />
         <p class="whitespace-nowrap">{{ meteo }}</p>
       </div>
       <p class="whitespace-nowrap">{{ heure }}</p>
@@ -41,7 +43,7 @@ const meteo = computed(() => (weather.value?.text ? `${weather.value.temp !== ""
     <img :src="logoBlanc" alt="AMÉUX" class="h-[53px] w-[214.043px]" />
     <div class="flex items-center gap-[53.104px]">
       <div v-if="meteo" class="flex items-center gap-[22.23px]">
-        <img v-if="weather.icon" :src="weather.icon" alt="" class="size-[52.425px]" />
+        <img v-if="icone" :src="icone" alt="" class="size-[52.425px] scale-[1.7]" />
         <p class="whitespace-nowrap">{{ meteo }}</p>
       </div>
       <p class="whitespace-nowrap">{{ heure }}</p>
