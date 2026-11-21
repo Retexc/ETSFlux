@@ -21,8 +21,8 @@ interrupteurs, bloc STM, aperçu). Ce dépôt ne fait plus qu'afficher.
   dans son navigateur. « Déconnecter » dans Flux le lui retire.
 - L'écran relit la liste de Flux chaque minute et les données STM toutes les 30 secondes (une seule demande pour tout l'écran).
   Flux ou Internet en panne : la dernière liste reste affichée. La page se recharge seule une fois par jour.
-- **Horaires STM (GTFS)** : au démarrage, Flask lit les fichiers filtrés du bucket Supabase `gtfs-files` ; s'ils manquent, et
-  ensuite **chaque semaine**, il télécharge le GTFS public de la STM et garde seulement nos lignes et nos arrêts
+- **Horaires STM (GTFS)** : au démarrage, Flask lit les fichiers filtrés du bucket Supabase `gtfs-files` ; à chaque démarrage
+  (après 1 minute, en arrière-plan) et ensuite **chaque semaine**, il télécharge le GTFS public de la STM et garde seulement nos lignes et nos arrêts
   (`backend/loaders/gtfs_update.py`). Un fichier sans nos lignes est refusé : les anciens horaires restent. Lignes et arrêts : `backend/config.py`.
 
 ## Variables

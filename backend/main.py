@@ -40,7 +40,8 @@ os.makedirs(STM_DIR, exist_ok=True)
 # ─── Horaires STM (GTFS) ──────────────────────────────────────
 # 1. Au démarrage : fichiers déjà filtrés gardés dans Supabase (bucket gtfs-files), rapides à lire.
 # 2. Absents : téléchargés directement de la STM et filtrés (loaders/gtfs_update.py).
-# 3. Ensuite, chaque semaine : mis à jour depuis la STM, sans intervention (GTFS_AUTO=non pour couper).
+# 3. À chaque démarrage (après 1 minute), puis chaque semaine : mis à jour depuis la STM, sans intervention
+#    (GTFS_AUTO=non pour couper). Échec : anciens horaires gardés, nouvel essai 24 h plus tard.
 download_gtfs_data(STM_DIR)
 routes_map, stm_trips, stm_stop_times = load_gtfs_data(STM_DIR)
 
@@ -63,12 +64,21 @@ def mettre_a_jour_gtfs():
         return False
 
 
+DELAI_DEMARRAGE_S = 60      # laisse le serveur répondre d'abord (réveil de Render)
+REESSAI_ECHEC_H = 24        # STM injoignable : on réessaie le lendemain, pas dans une semaine
+
+
 def boucle_gtfs():
-    if not stm_trips:
-        mettre_a_jour_gtfs()
+    """
+    Vérifie les horaires de la STM à CHAQUE démarrage, puis chaque semaine. Un serveur gratuit de Render
+    redémarre souvent (mise en veille) : un simple compteur d'une semaine repartirait à zéro et la mise
+    à jour n'arriverait jamais. En arrière-plan : les réponses de l'écran ne sont jamais retardées.
+    """
+    if stm_trips:
+        time.sleep(DELAI_DEMARRAGE_S)
     while True:
-        time.sleep(MAJ_GTFS_JOURS * 24 * 3600)
-        mettre_a_jour_gtfs()
+        ok = mettre_a_jour_gtfs()
+        time.sleep((MAJ_GTFS_JOURS * 24 if ok else REESSAI_ECHEC_H) * 3600)
 
 
 if os.getenv("GTFS_AUTO", "oui").lower() not in ("non", "0", "false") and os.getenv("ENVIRONMENT") != "development":
