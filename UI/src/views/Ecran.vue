@@ -8,14 +8,13 @@ import Telecommande from "../components/Telecommande.vue";
 import Jumelage from "../components/Jumelage.vue";
 import DiapoStm from "./diapos/DiapoStm.vue";
 import DiapoExo from "./diapos/DiapoExo.vue";
-import DiapoRem from "./diapos/DiapoRem.vue";
 import DiapoVeille from "./diapos/DiapoVeille.vue";
 import { useTransit } from "../composables/useTransit.js";
 import { garderLiens, jeton, lireListe } from "../lib/flux.js";
 
 /**
  * Écran du salon (Figma « ETS Flux ») : les diapositives choisies dans AMÉUX Flux, dans leur ordre et avec
- * leur durée (images, vidéos, STM, trains exo, REM, photos d'ambiance).
+ * leur durée (images, vidéos, STM, trains exo, photos d'ambiance).
  * - Bandeau d'annonces (messages de l'ÉTS / de l'AMÉUX) : en bas de TOUTES les diapositives.
  * - Alertes STM : seulement sur les diapositives de transport (pas de surcharge ailleurs).
  * - Notice de la télécommande : toujours sur les photos d'ambiance, et de temps à autre sur les autres.
@@ -37,7 +36,6 @@ const liste = ref([]);
 const messages = ref([]);
 const photos = ref([]);
 const photosParDefaut = ref(true);
-const rem = ref([]);
 const version = ref(null);
 const index = ref(0);
 const photoIndex = ref(0);
@@ -70,7 +68,6 @@ async function lire() {
   messages.value = r.liste.messages || [];
   photos.value = garderLiens((r.liste.photos || []).map((p) => ({ ...p, version: p.credit ?? "" })), photos.value);
   photosParDefaut.value = r.liste.photosParDefaut !== false;
-  rem.value = r.liste.rem || [];
   const i = liste.value.findIndex((d) => d.id === idActuel);
   index.value = i >= 0 ? i : 0;
   programmer();
@@ -128,7 +125,6 @@ onBeforeUnmount(() => {
       <div v-if="actuelle" :key="actuelle.id" class="absolute inset-0">
         <DiapoStm v-if="actuelle.type === 'stm'" />
         <DiapoExo v-else-if="actuelle.type === 'exo'" />
-        <DiapoRem v-else-if="actuelle.type === 'rem'" :lignes="rem" />
         <DiapoVeille v-else-if="actuelle.type === 'veille'" :photo="photo" />
         <template v-else>
           <!-- Image ou vidéo de l'AMÉUX : en-tête blanc, puis le fichier sur fond noir -->

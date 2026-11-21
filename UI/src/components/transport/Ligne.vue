@@ -12,7 +12,6 @@ const props = defineProps({
   code: { type: String, required: true },
   couleur: { type: String, default: "#6e2379" },
   texte: { type: String, default: "#ffffff" },
-  contour: { type: Boolean, default: false },   // REM : pastille blanche à contour vert
   direction: { type: String, default: "" },
   arret: { type: String, default: "" },
   accessible: { type: Boolean, default: false },
@@ -23,10 +22,8 @@ const props = defineProps({
 <template>
   <div class="flex h-[90px] w-[1850.47px] shrink-0 items-center justify-between rounded-[10.648px] bg-white px-[30px] py-[11px]">
     <div class="flex min-w-0 items-center gap-[24px]">
-      <div class="flex w-[84.003px] shrink-0 items-start justify-center rounded-[9.874px] px-[18.262px] py-[14.609px]"
-        :class="props.contour ? 'border-4 border-solid border-[#85be00]' : ''"
-        :style="props.contour ? {} : { background: props.couleur }">
-        <p class="whitespace-nowrap font-satoshi text-[26.297px] font-black" :style="{ color: props.contour ? '#000000' : props.texte }">{{ props.code }}</p>
+      <div class="flex w-[84.003px] shrink-0 items-start justify-center rounded-[9.874px] px-[18.262px] py-[14.609px]" :style="{ background: props.couleur }">
+        <p class="whitespace-nowrap font-satoshi text-[26.297px] font-black" :style="{ color: props.texte }">{{ props.code }}</p>
       </div>
       <div class="flex min-w-0 flex-col justify-center gap-[6.477px]">
         <div class="flex items-center gap-[8px]">

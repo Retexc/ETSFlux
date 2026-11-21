@@ -4,8 +4,7 @@
 
 Affiche sur la TV du salon (design Figma « ETS Flux ») : un en-tête (logo, date, météo, heure), les annonces de
 l'AMÉUX en image ou en vidéo, les prochains passages **STM** (lignes 61 et 36, avec l'achalandage), les trains **exo**
-au départ de la gare Lucien-L'Allier (Candiac, Saint-Jérôme, Vaudreuil), l'état du **REM** (indiqué dans AMÉUX Flux)
-et des **photos d'ambiance** (écran de veille, avec la notice de la télécommande).
+au départ de la gare Lucien-L'Allier (Candiac, Saint-Jérôme, Vaudreuil) et des **photos d'ambiance** (écran de veille, avec la notice de la télécommande).
 
 - Bandeau du bas : messages de l'ÉTS / de l'AMÉUX sur toutes les diapositives ; alertes STM seulement sur les
   diapositives de transport. Rappel de la télécommande toutes les 3 minutes sur les autres diapositives.
