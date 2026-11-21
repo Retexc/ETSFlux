@@ -23,6 +23,7 @@ from .alerts import process_stm_alerts
 
 from .loaders.gtfs_loader import download_gtfs_data, load_gtfs_data
 from .loaders.gtfs_update import telecharger_et_filtrer
+from .loaders import exo
 from .managers.weather_manager import get_weather
 
 # ────────────────────────────────────────────────────────────────
@@ -68,6 +69,22 @@ DELAI_DEMARRAGE_S = 60      # laisse le serveur répondre d'abord (réveil de Re
 REESSAI_ECHEC_H = 24        # STM injoignable : on réessaie le lendemain, pas dans une semaine
 
 
+def mettre_a_jour_exo():
+    try:
+        exo.telecharger()
+        return True
+    except Exception as e:
+        logger.error(f"[exo] Horaires indisponibles, anciens gardés : {e}")
+        return False
+
+
+def boucle_exo():
+    """Horaires exo (petit fichier) : tout de suite au démarrage, puis chaque semaine ; échec → réessai dans 1 h."""
+    while True:
+        ok = mettre_a_jour_exo()
+        time.sleep(MAJ_GTFS_JOURS * 24 * 3600 if ok else 3600)
+
+
 def boucle_gtfs():
     """
     Vérifie les horaires de la STM à CHAQUE démarrage, puis chaque semaine. Un serveur gratuit de Render
@@ -83,6 +100,7 @@ def boucle_gtfs():
 
 if os.getenv("GTFS_AUTO", "oui").lower() not in ("non", "0", "false") and os.getenv("ENVIRONMENT") != "development":
     threading.Thread(target=boucle_gtfs, name="gtfs", daemon=True).start()
+    threading.Thread(target=boucle_exo, name="exo", daemon=True).start()
 
 # ====================================================================
 # Metro Alerts Processing Functions
@@ -451,10 +469,18 @@ def calculer_donnees():
         # ========== WEATHER ==========
         weather = get_weather()
 
+        # ========== EXO (trains au départ de Lucien-L'Allier) ==========
+        try:
+            trains_exo = exo.departs_exo()
+        except Exception as e:
+            logger.error(f"[exo] {e}")
+            trains_exo = []
+
         # Build response
         response = {
             "buses": buses,
             "metro_lines": metro_lines,
+            "exo": trains_exo,
             "weather": weather,
             "alerts": filtered_alerts,
             "debug": {

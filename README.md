@@ -2,8 +2,15 @@
 
 # ETSignage — écran du salon étudiant (AMÉUX)
 
-Affiche sur la TV du salon : un bandeau (date, heure, météo), les annonces de l'AMÉUX en image ou en vidéo,
-et les prochains passages STM (lignes 61 et 36, avec l'achalandage) et l'état du métro.
+Affiche sur la TV du salon (design Figma « ETS Flux ») : un en-tête (logo, date, météo, heure), les annonces de
+l'AMÉUX en image ou en vidéo, les prochains passages **STM** (lignes 61 et 36, avec l'achalandage), les trains **exo**
+au départ de la gare Lucien-L'Allier (Candiac, Saint-Jérôme, Vaudreuil) et des **photos d'ambiance** (écran de veille, avec la notice de la télécommande).
+
+- Bandeau du bas : messages de l'ÉTS / de l'AMÉUX sur toutes les diapositives ; alertes STM seulement sur les
+  diapositives de transport. Rappel de la télécommande toutes les 3 minutes sur les autres diapositives.
+- Tout est dessiné en 1920 × 1080 (taille des maquettes) puis mis à l'échelle de la TV (`components/Scene.vue`).
+- Images des maquettes : `UI/src/assets/figma/` ; photos d'ambiance par défaut (Unsplash) : `UI/src/assets/ambiance/`.
+  Police Satoshi chargée depuis Fontshare (sa licence ne permet pas de copier les fichiers dans le dépôt).
 
 **Les annonces se gèrent dans AMÉUX Flux** : Annonces → Écran du salon (ajout, durée, dates, ordre,
 interrupteurs, bloc STM, aperçu). Ce dépôt ne fait plus qu'afficher.
@@ -31,6 +38,8 @@ interrupteurs, bloc STM, aperçu). Ce dépôt ne fait plus qu'afficher.
 
 Serveur (`.env` à la racine, ou Render ; jamais commité) : `STM_API_KEY`, `WEATHER_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY`
 (lecture du bucket `gtfs-files`), facultatives `GTFS_AUTO=non` (couper la mise à jour automatique), `GTFS_STM_URL`, `GLOBAL_DELAY_MINUTES`.
+Trains exo : horaires publics téléchargés au démarrage puis chaque semaine (`backend/loaders/exo.py`) ; le temps réel
+(retards, annulations) s'active seul quand `CHRONO_TOKEN` (clé de l'API Chrono d'exo) est ajoutée dans Render.
 
 Dans Flux (Vercel) : `AFFICHAGE_ORIGINES` = adresse de l'écran (ex. `https://ecran.exemple.com`), sinon le navigateur de la TV
 ne peut pas lire la liste ; `AFFICHAGE_URL_ECRAN` (facultative) = même adresse, montrée avec le code de jumelage.

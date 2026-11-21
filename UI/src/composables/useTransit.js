@@ -9,6 +9,7 @@ import { API_URL } from '../config.js'
 const buses = ref([])
 const metroLines = ref([])
 const alerts = ref([])
+const exo = ref([])
 const weather = ref({ icon: '', text: '', temp: '' })
 const chargement = ref(true)
 const erreur = ref(null)
@@ -25,6 +26,7 @@ async function lire() {
     buses.value = data.buses || []
     metroLines.value = data.metro_lines || []
     alerts.value = data.alerts || []
+    exo.value = data.exo || []
     if (data.weather) weather.value = data.weather
     erreur.value = null
   } catch (e) {
@@ -50,5 +52,5 @@ export function useTransit() {
       minuterie = null
     }
   })
-  return { buses, metroLines, alerts, weather, chargement, erreur }
+  return { buses, metroLines, alerts, exo, weather, chargement, erreur }
 }
