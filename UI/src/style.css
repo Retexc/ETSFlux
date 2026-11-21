@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* Polices des maquettes Figma « ETS Flux » : Satoshi (titres, heures) et Atlas Grotesk (arrêts) */
+@theme {
+  --font-satoshi: "Satoshi", "AtlasGrotesk", system-ui, sans-serif;
+  --font-atlas: "AtlasGrotesk", system-ui, sans-serif;
+}
+
+/* Satoshi : chargée depuis Fontshare dans index.html (sa licence n'autorise pas à copier les fichiers dans le dépôt) */
+
 html, body, #app {
   height: 100%;
   margin: 0;

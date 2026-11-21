@@ -1,12 +1,13 @@
 <script setup>
-import STMBloc from "../components/STMBloc.vue";
+import Scene from "../components/Scene.vue";
 import AlertBanner from "../components/AlertBanner.vue";
+import DiapoStm from "./diapos/DiapoStm.vue";
 </script>
 
-<!-- /stm : prochains passages en plein écran, sans les annonces -->
+<!-- /stm : prochains passages STM en plein écran, sans les annonces -->
 <template>
-  <div class="fixed inset-0 bg-black">
-    <STMBloc />
-    <AlertBanner />
-  </div>
+  <Scene>
+    <DiapoStm />
+    <div class="absolute bottom-0 left-0 w-[1920px]"><AlertBanner /></div>
+  </Scene>
 </template>
