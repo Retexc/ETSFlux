@@ -12,5 +12,6 @@ const basCredit = inject("basCredit", ref(6));
     <img :src="fond" alt="" class="absolute size-full max-w-none object-cover" />
     <div class="absolute inset-0 bg-black/50" />
   </div>
-  <p class="absolute left-[8px] font-atlas text-[14px] text-white/45" :style="{ bottom: `${basCredit}px` }">Photo : Stéphane Brugger</p>
+  <!-- La photo porte déjà son crédit en bas à gauche : répété seulement quand un bandeau le cache -->
+  <p v-if="basCredit > 6" class="absolute left-[8px] font-atlas text-[14px] text-white/45" :style="{ bottom: `${basCredit}px` }">Photo : Stéphane Brügger</p>
 </template>

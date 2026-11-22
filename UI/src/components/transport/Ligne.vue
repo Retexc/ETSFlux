@@ -35,7 +35,8 @@ const props = defineProps({
     </div>
     <div class="flex shrink-0 items-center gap-[31.01px]">
       <slot />
-      <img v-if="props.accessible" :src="accessible" alt="Accessible" class="size-[39.063px]" />
+      <!-- Place gardée même sans accessibilité : l'heure et l'achalandage restent alignés d'une ligne à l'autre -->
+      <img :src="accessible" :alt="props.accessible ? 'Accessible' : ''" class="size-[39.063px]" :class="{ invisible: !props.accessible }" />
       <div v-if="props.vehicule" class="flex size-[39.063px] items-center justify-center rounded-[7.813px] bg-[#3ec342] px-[6.511px] py-[2.604px]">
         <div class="size-[31.251px]" :style="{ maskImage: `url(${busMasque})`, WebkitMaskImage: `url(${busMasque})`, maskSize: '31.251px 31.251px', WebkitMaskSize: '31.251px 31.251px' }">
           <img :src="bus" alt="Autobus" class="size-full" />
