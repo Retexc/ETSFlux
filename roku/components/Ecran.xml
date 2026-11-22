@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Écran du salon : les diapositives d'AMÉUX Flux, dans l'ordre et avec leur durée. Flux dessine chaque
+  diapositive en image 1920 × 1080 ; ici on affiche les images (deux affiches, pour passer de l'une à
+  l'autre sans écran vide) et les vidéos, et on écrit en direct l'heure, le bandeau d'annonces et les
+  alertes STM (textes défilants), et de temps à autre le rappel de la télécommande.
+-->
+<component name="Ecran" extends="Group">
+  <interface>
+    <field id="etat" type="string" />
+    <field id="relire" type="boolean" alwaysNotify="true" onChange="lire" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/Ecran.brs" />
+  <children>
+    <Rectangle id="fond" width="1920" height="1080" color="0x0B2147FF" />
+    <Poster id="afficheA" width="1920" height="1080" visible="false" />
+    <Poster id="afficheB" width="1920" height="1080" visible="false" />
+    <Poster id="prechargement" width="1920" height="1080" visible="false" />
+    <Rectangle id="fondVideo" width="1920" height="1080" color="0x000000FF" visible="false" />
+    <Video id="video" translation="[0,90]" width="1920" height="990" enableUI="false" visible="false" />
+    <Poster id="entete" width="1920" height="90" visible="false" />
+    <Label id="heure" width="400" height="60" horizAlign="right" vertAlign="center" visible="false" />
+    <Poster id="notice" width="1920" height="130" visible="false" />
+    <Rectangle id="bandeauAlertes" width="1920" height="56" color="0xFF7A00FF" visible="false">
+      <ScrollingLabel id="texteAlertes" translation="[24,0]" maxWidth="1872" height="56" vertAlign="center" color="0x000000FF" scrollSpeed="120" />
+    </Rectangle>
+    <Rectangle id="bandeauMessages" width="1920" height="56" color="0x004952FF" visible="false">
+      <ScrollingLabel id="texteMessages" translation="[24,0]" maxWidth="1872" height="56" vertAlign="center" color="0xFFFFFFFF" scrollSpeed="120" />
+    </Rectangle>
+    <Label id="message" width="1600" height="300" translation="[160,390]" horizAlign="center" vertAlign="center" wrap="true" color="0xFFFFFFFF" visible="false" />
+    <Timer id="minuterieDiapo" repeat="false" />
+    <Timer id="minuterieLecture" duration="60" repeat="true" />
+    <Timer id="minuterieHeure" duration="5" repeat="true" />
+    <Timer id="minuterieNotice" duration="180" repeat="true" />
+    <Timer id="finNotice" duration="10" repeat="false" />
+  </children>
+</component>

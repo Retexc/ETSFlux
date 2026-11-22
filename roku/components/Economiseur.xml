@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Économiseur d'écran « AMÉUX » : seulement l'écran du salon. La Roku le ferme à la première touche. -->
+<component name="Economiseur" extends="Scene">
+  <children>
+    <Ecran id="ecran" />
+  </children>
+</component>

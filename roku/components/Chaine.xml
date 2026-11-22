@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Chaîne « AMÉUX » : connecte la TV à AMÉUX Flux (code de « Connecter un écran »), puis montre l'écran.
+  Touche * (Options) : reconnecter avec un nouveau code. Retour : quitter.
+-->
+<component name="Chaine" extends="Scene">
+  <script type="text/brightscript" uri="pkg:/components/Chaine.brs" />
+  <children>
+    <Ecran id="ecran" />
+    <Rectangle id="avis" width="1920" height="72" translation="[0,0]" color="0x004952F2" visible="false">
+      <Label id="texteAvis" width="1872" height="72" translation="[24,0]" vertAlign="center" color="0xFFFFFFFF" font="font:MediumBoldSystemFont" />
+    </Rectangle>
+    <Timer id="finAvis" duration="12" repeat="false" />
+  </children>
+</component>
