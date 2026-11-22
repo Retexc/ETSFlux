@@ -9,6 +9,7 @@ au départ de la gare Lucien-L'Allier (Candiac, Saint-Jérôme, Vaudreuil) et de
 - Bandeau du bas : messages de l'ÉTS / de l'AMÉUX sur toutes les diapositives ; alertes STM seulement sur les
   diapositives de transport. Rappel de la télécommande toutes les 3 minutes sur les autres diapositives.
 - Tout est dessiné en 1920 × 1080 (taille des maquettes) puis mis à l'échelle de la TV (`components/Scene.vue`).
+- `/apercu` : le même écran dans le cadre « Aperçu » d'AMÉUX Flux (liste reçue par `postMessage`, seulement de l'adresse de Flux ; cadre permis à Flux seulement, `UI/vercel.json`).
 - Images des maquettes : `UI/src/assets/figma/` ; photos d'ambiance par défaut (Unsplash) : `UI/src/assets/ambiance/`.
   Police Satoshi chargée depuis Fontshare (sa licence ne permet pas de copier les fichiers dans le dépôt).
 

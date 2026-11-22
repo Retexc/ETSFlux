@@ -12,6 +12,7 @@ import DiapoVeille from "./diapos/DiapoVeille.vue";
 import DiapoSimple from "./diapos/DiapoSimple.vue";
 import { useTransit } from "../composables/useTransit.js";
 import { garderLiens, jeton, lireListe } from "../lib/flux.js";
+import { FLUX_URL } from "../config.js";
 
 /**
  * Écran du salon (Figma « ETS Flux ») : les diapositives choisies dans AMÉUX Flux, dans leur ordre et avec
@@ -20,7 +21,14 @@ import { garderLiens, jeton, lireListe } from "../lib/flux.js";
  * - Alertes STM : seulement sur les diapositives de transport (pas de surcharge ailleurs).
  * - Notice de la télécommande : toujours sur les photos d'ambiance, et de temps à autre sur les autres.
  * La liste est relue chaque minute ; Flux ou Internet en panne : la dernière liste reste affichée.
+ *
+ * Mode aperçu (/apercu, affiché dans AMÉUX Flux) : pas de jeton ni de minuterie. La page de Flux envoie
+ * la liste et la diapositive à montrer (postMessage, acceptés seulement de l'adresse de Flux) ; l'écran
+ * lui dit quand il est prêt et quand une vidéo se termine.
  */
+const props = defineProps({ apercu: { type: Boolean, default: false } });
+const ORIGINE_FLUX = new URL(FLUX_URL).origin;
+const versFlux = (m) => { if (window.parent !== window) window.parent.postMessage(m, ORIGINE_FLUX); };
 const LECTURE_MS = 60_000;
 const VIDEO_MAX_MS = 10 * 60_000;
 const RECHARGER_APRES_MS = 24 * 3600_000;
@@ -32,7 +40,7 @@ const PHOTOS_DEFAUT = Object.values(import.meta.glob("../assets/ambiance/*.jpg",
   .map((url) => ({ id: url, url, credit: "Photo : Unsplash" }));
 
 const { alerts } = useTransit();   // une seule lecture STM / météo / exo pour tout l'écran
-const jumele = ref(!!jeton());
+const jumele = ref(props.apercu || !!jeton());
 const liste = ref([]);
 const messages = ref([]);
 const photos = ref([]);
@@ -75,6 +83,7 @@ async function lire() {
 }
 
 function suivante() {
+  if (props.apercu) { versFlux({ type: "ecran:fin" }); return; }   // Flux choisit la suivante
   if (Date.now() - demarre > RECHARGER_APRES_MS) { window.location.reload(); return; }
   if (!liste.value.length) return;
   index.value = (index.value + 1) % liste.value.length;
@@ -84,6 +93,7 @@ function suivante() {
 
 function programmer() {
   clearTimeout(minuterieDiapo);
+  if (props.apercu) return;
   const d = actuelle.value;
   if (!d || liste.value.length < 2) return;
   const ms = d.duree_s ? d.duree_s * 1000 : d.type === "video" ? VIDEO_MAX_MS : 10_000;
@@ -95,7 +105,9 @@ function programmer() {
 
 function finVideo() { if (!actuelle.value?.duree_s) suivante(); }
 
-watch(actuelle, async (d) => {
+// Relancée seulement quand la diapositive change vraiment (pas à chaque nouvelle copie de la liste)
+watch(() => (actuelle.value ? `${actuelle.value.id}:${actuelle.value.version}:${actuelle.value.url}` : ""), async () => {
+  const d = actuelle.value;
   if (d?.type !== "video") return;
   await nextTick();
   if (video.value) { video.value.currentTime = 0; video.value.play().catch(() => setTimeout(suivante, 2000)); }
@@ -109,12 +121,38 @@ function rappelTelecommande() {
 
 function commencer() { jumele.value = true; lire(); }
 
+let dernierApercu = "";
+
+/** Mode aperçu : liste et position envoyées par la page de Flux. */
+function recevoir(e) {
+  if (e.origin !== ORIGINE_FLUX || e.data?.type !== "flux:apercu") return;
+  const d = e.data;
+  if (!Array.isArray(d.diapos)) return;
+  const cle = JSON.stringify(d);
+  if (cle === dernierApercu) return;   // rien de changé : la vidéo en cours ne recommence pas
+  dernierApercu = cle;
+  liste.value = d.diapos;
+  messages.value = Array.isArray(d.messages) ? d.messages.filter((m) => typeof m === "string") : [];
+  photos.value = Array.isArray(d.photos) ? d.photos : [];
+  photosParDefaut.value = d.photosParDefaut !== false;
+  const i = Number.isInteger(d.index) && d.index >= 0 && d.index < d.diapos.length ? d.index : 0;
+  if (i !== index.value && d.diapos[i]?.type === "veille") photoIndex.value += 1;
+  index.value = i;
+}
+
 onMounted(() => {
+  if (props.apercu) {
+    window.addEventListener("message", recevoir);
+    versFlux({ type: "ecran:pret" });
+    minuterieNotice = setInterval(rappelTelecommande, NOTICE_TOUTES_MS);
+    return;
+  }
   if (jumele.value) lire();
   minuterieLecture = setInterval(() => { if (jumele.value) lire(); }, LECTURE_MS);
   minuterieNotice = setInterval(rappelTelecommande, NOTICE_TOUTES_MS);
 });
 onBeforeUnmount(() => {
+  window.removeEventListener("message", recevoir);
   clearTimeout(minuterieDiapo); clearInterval(minuterieLecture); clearInterval(minuterieNotice); clearTimeout(minuterieNoticeFin);
 });
 </script>
