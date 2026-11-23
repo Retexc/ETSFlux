@@ -1,0 +1,12 @@
+title=AMÉUX
+major_version=1
+minor_version=0
+build_version=1
+mm_icon_focus_fhd=pkg:/images/icone-fhd.png
+mm_icon_focus_hd=pkg:/images/icone-hd.png
+splash_screen_fhd=pkg:/images/splash-fhd.jpg
+splash_screen_hd=pkg:/images/splash-hd.jpg
+splash_color=#0B2147
+splash_min_time=800
+ui_resolutions=fhd
+screensaver_title=AMÉUX

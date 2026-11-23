@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Appels à AMÉUX Flux, hors de l'affichage (une tâche par demande). -->
+<component name="Reseau" extends="Task">
+  <interface>
+    <field id="action" type="string" />
+    <field id="valeur" type="string" />
+    <field id="resultat" type="assocarray" alwaysNotify="true" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/source/config.brs" />
+  <script type="text/brightscript" uri="pkg:/components/Reseau.brs" />
+</component>
