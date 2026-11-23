@@ -1,5 +1,5 @@
 sub init()
-    for each id in ["afficheA", "afficheB", "prechargement", "fondVideo", "video", "entete", "heure", "notice", "bandeauAlertes", "texteAlertes", "bandeauMessages", "texteMessages", "message", "minuterieDiapo", "minuterieLecture", "minuterieHeure", "minuterieNotice", "finNotice"]
+    for each id in ["afficheA", "afficheB", "prechargement", "fondVideo", "video", "entete", "heure", "notice", "bandeauAlertes", "texteAlertes", "bandeauMessages", "texteMessages", "message", "minuterieDiapo", "minuterieLecture", "minuterieHeure", "minuterieNotice", "finNotice", "gardeVideo"]
         m[id] = m.top.findNode(id)
     end for
     m.affichee = m.afficheA          ' affiche à l'écran ; l'autre charge la prochaine image
@@ -15,6 +15,8 @@ sub init()
     m.minuterieNotice.observeField("fire", "montrerNotice")
     m.finNotice.observeField("fire", "cacherNotice")
     m.video.observeField("state", "etatVideo")
+    m.video.mute = true                  ' sans son, comme l'écran web (et un économiseur ne doit pas jouer de son)
+    m.gardeVideo.observeField("fire", "videoBloquee")
     m.afficheA.observeField("loadStatus", "imageChargee")
     m.afficheB.observeField("loadStatus", "imageChargee")
     appliquerPolices()
@@ -110,8 +112,14 @@ sub montrer(d as Object)
         m.video.visible = true
         m.entete.uri = d.image
         m.entete.visible = true
+        print "[ameux] vidéo : "; d.video
         m.video.control = "play"
-        if d.duree_s > 0 then programmer(d.duree_s)
+        m.gardeVideo.control = "start"   ' pas démarrée dans 20 s : on passe à la suivante
+        if d.duree_s > 0
+            programmer(d.duree_s)
+        else
+            programmer(600)               ' « jusqu'à la fin » : 10 min au plus, comme l'écran web
+        end if
     else
         arreterVideo()
         afficherImage(d.image)
@@ -130,6 +138,8 @@ end sub
 
 sub etatVideo()
     etat = m.video.state
+    print "[ameux] état de la vidéo : "; etat; " "; m.video.errorCode; " "; m.video.errorMsg
+    if etat = "playing" then m.gardeVideo.control = "stop"
     if m.index < 0 or m.index >= m.diapos.Count() then return
     d = m.diapos[m.index]
     if d.sorte <> "video" then return
@@ -137,7 +147,13 @@ sub etatVideo()
     if etat = "error" then suivante()   ' vidéo illisible : on passe à la suivante
 end sub
 
+sub videoBloquee()
+    print "[ameux] la vidéo n'a pas démarré : suivante"
+    suivante()
+end sub
+
 sub arreterVideo()
+    m.gardeVideo.control = "stop"
     if m.video.visible then m.video.control = "stop"
     m.video.visible = false
     m.fondVideo.visible = false
